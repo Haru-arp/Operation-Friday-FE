@@ -13,7 +13,6 @@ const LayoutContainer = styled.div`
 
 export const RootLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-  console.log("onToggle", sidebarOpen);
 
   return (
     <LayoutContainer>
