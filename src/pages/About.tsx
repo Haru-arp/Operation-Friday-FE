@@ -2,7 +2,7 @@ export default function About() {
     return (
         <div className="flex flex-col size-full justify-between ">
             <div className="flex flex-col gap-6 ">
-                <div className="font-bold text-[24px]">미래 가젯 연구소 멤버</div>
+                <div className="font-bold text-[18px] mb-[4px]">미래 가젯 연구소 멤버</div>
                 <div className="flex flex-col gap-10">
                     <div className="flex flex-col">
                         <div className="font-bold text-[22px]">FE & Design</div>
