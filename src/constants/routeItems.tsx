@@ -1,30 +1,12 @@
-import { BookA, LayoutDashboard, Notebook, NotebookPen } from "lucide-react";
+import { LayoutDashboard, PlusCircle, List, BarChart3, Target, MessageCircle, Wallet, BookOpen } from "lucide-react";
 
-export interface RouteItem {
-  to: string;
-  name: string;
-  icon?: React.ReactNode;
-}
-
-export const router: RouteItem[] = [
-  {
-    to: "/",
-    name: "대시보드",
-    icon: <LayoutDashboard className="size-4.5" />,
-  },
-  {
-    to: "/insert",
-    name: "거래입력",
-    icon: <NotebookPen className="size-4.5" />,
-  },
-  {
-    to: "/entries",
-    name: "거래내역",
-    icon: <Notebook className="size-4.5" />,
-  },
-  {
-    to: "/about",
-    name: "라보멤",
-    icon: <BookA className="size-4.5" />,
-  },
+export const menuItems = [
+    { icon: LayoutDashboard, label: "대시보드", path: "/", color: "bg-gray-500" },
+    { icon: PlusCircle, label: "거래입력", path: "/transaction/new", color: "bg-gray-600" },
+    { icon: List, label: "거래내역", path: "/transactions", color: "bg-gray-700" },
+    { icon: BarChart3, label: "분석", path: "/analytics", color: "bg-gray-500" },
+    { icon: Target, label: "목표관리", path: "/goals", color: "bg-gray-600" },
+    { icon: MessageCircle, label: "AI 상담", path: "/ai-chat", color: "bg-purple-500" },
+    { icon: Wallet, label: "계정관리", path: "/accounts", color: "bg-gray-700" },
+    { icon: BookOpen, label: "분개가이드", path: "/guide", color: "bg-blue-500" },
 ];

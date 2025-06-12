@@ -1,35 +1,79 @@
-// src/routes/router.tsx
 import { createBrowserRouter, type RouteObject } from "react-router-dom";
 import Home from "../pages/Home";
 import About from "../pages/About";
 import { RootLayout } from "../layout/RootLayout";
 import Insert from "@/pages/Insert";
 import Entries from "@/pages/Entries";
+import LoginPage from "@/pages/Login";
+import { AuthGuard } from "@/layout/components/AuthGuard";
+import { SettingsLayout } from "@/layout/SettingsLayout";
 
 export const routerChildren: RouteObject[] = [
     {
-        index: true,
-        element: <Home />, //dashboard
-    },
-    {
-        path: "/insert",
-        element: <Insert />,
-    },
-    {
-        path: "/entries",
-        element: <Entries />,
-    },
-    {
-        path: "/about",
-        element: <About />,
+        path: "/",
+        element: <RootLayout />,
+        children: [
+            {
+                index: true,
+                element: <Home />, //dashboard
+            },
+
+            {
+                path: "/transaction/new",
+                element: <Insert />,
+            },
+            {
+                path: "/transactions",
+                element: <Entries />,
+            },
+            {
+                path: "/analytics",
+                element: "analytics",
+            },
+            {
+                path: "/goals",
+                element: "goals",
+            },
+            {
+                path: "/ai-chat",
+                element: "ai-chat",
+            },
+            {
+                path: "/accounts",
+                element: "accounts",
+            },
+            {
+                path: "/guide",
+                element: "guide",
+            },
+            {
+                path: "/about",
+                element: <About />,
+            },
+        ],
     },
 ];
 
 const router = createBrowserRouter([
     {
-        path: "/",
-        element: <RootLayout />,
-        children: routerChildren,
+        element: <AuthGuard />,
+        children: [
+            ...routerChildren,
+            {
+                path: "/settings",
+                element: <SettingsLayout />,
+                children: [
+                    {
+                        index: true,
+                        element: <div>Settings Index</div>,
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        path: "/login",
+        element: <LoginPage />,
     },
 ]);
 

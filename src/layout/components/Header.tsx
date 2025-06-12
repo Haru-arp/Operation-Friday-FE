@@ -1,46 +1,33 @@
-import { Button } from "@/components/ui/button";
-import { usePageTitle } from "@/hook/usePageTitle";
-import dayjs from "dayjs";
+import { Home, PlusCircle, Settings } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 
-interface HeaderProps {
-  login?: boolean;
-  setLogin?: () => void;
-}
-export default function Header({ login, setLogin }: HeaderProps) {
-  const pageTitle = usePageTitle();
-  const date = dayjs();
-  const formatted = date.format("YYYY년 M월 D일");
-  return (
-    <header className="w-full h-25 flex items-center justify-between">
-      <div>
-        <div className="font-extrabold text-[26px] text-gray-900">
-          {pageTitle}
-        </div>
-        <div className="font-medium text-[14px] text-gray-500">{formatted}</div>
-      </div>
-      {!login ? (
-        <Button onClick={setLogin} size="lg">
-          Connect OpFriday
-        </Button>
-      ) : (
-        <div className="flex items-center gap-2 ">
-          <div className="flex -space-x-2 overflow-hidden">
-            <img
-              className="inline-block size-12 rounded-full ring-2 ring-white"
-              src="https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-              alt=""
-            />
-          </div>
-          <div className="flex flex-col items-start cursor-pointer">
-            <div className="font-bold text-[16px] text-[#000]">이동희</div>
-            <div className="font-light text-[12px] text-gray-600">
-              rou012001@gmail.com
+export default function Header() {
+    const location = useLocation();
+
+    return (
+        <header className="fixed top-0 left-0 right-0 bg-white border-b z-10">
+            <div className="container mx-auto px-4">
+                <div className="flex items-center justify-between h-16">
+                    <Link to="/dashboard" className="font-bold text-lg">
+                        복식부기 가계부
+                    </Link>
+
+                    <nav className="flex items-center space-x-1">
+                        <Link to="/dashboard" className={`p-2 rounded-md ${location.pathname === "/dashboard" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+                            <Home className="h-5 w-5" />
+                        </Link>
+                        <Link
+                            to="/transaction/new"
+                            className={`p-2 rounded-md ${location.pathname === "/transaction/new" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+                        >
+                            <PlusCircle className="h-5 w-5" />
+                        </Link>
+                        <Link to="/settings" className={`p-2 rounded-md ${location.pathname === "/settings" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+                            <Settings className="h-5 w-5" />
+                        </Link>
+                    </nav>
+                </div>
             </div>
-          </div>
-        </div>
-      )}
-    </header>
-  );
+        </header>
+    );
 }
-
-// className="font-bold text-[18px] mb-[4px]"
