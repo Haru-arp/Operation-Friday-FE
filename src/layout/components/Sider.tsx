@@ -67,7 +67,10 @@ export default function Sider({ onClickItem, login, setLogout }: LinkItem) {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2" onClick={setLogout}>
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={setLogout}
+          >
             <LogOutIcon className="size-3.5" />
             <div className="text-[12px] text-gray-600">Log out</div>
           </div>
