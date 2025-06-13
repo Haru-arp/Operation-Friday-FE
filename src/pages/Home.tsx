@@ -132,7 +132,7 @@ export default function Home() {
   }, [navigate]);
 
   return (
-    <div className="p-8 min-h-screen">
+    <div>
       {/** header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
