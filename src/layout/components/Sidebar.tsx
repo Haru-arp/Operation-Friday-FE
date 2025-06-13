@@ -1,7 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Settings, LogOut, Sparkles } from "lucide-react";
+import { Settings, LogOut, Sparkles, Menu } from "lucide-react";
 import { menuItems } from "@/constants/routeItems";
+import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface SidebarProps {
   userName: string;
@@ -9,16 +18,28 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ userName, userEmail }: SidebarProps) {
-  const router = useNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // 컴포넌트가 마운트된 후에만 테마 관련 UI를 렌더링
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
-    localStorage.clear();
-    router("/login");
+    try {
+      localStorage.clear();
+      navigate("/login");
+    } catch (error) {
+      console.error("로그아웃 중 오류 발생:", error);
+    }
   };
 
-  return (
-    <div className="h-full w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+  // 사이드바 내용 컴포넌트 - 데스크톱과 모바일에서 재사용
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
       {/* 로고 */}
       <div className="p-6 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-center gap-3">
@@ -35,8 +56,12 @@ export default function Sidebar({ userName, userEmail }: SidebarProps) {
           </div>
         </div>
       </div>
+
       {/* 메뉴 */}
-      <nav className="overflow-y-auto flex-1 p-4 space-y-2">
+      <nav
+        aria-label="주 메뉴"
+        className="flex-1 p-4 space-y-2 overflow-y-auto"
+      >
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -49,7 +74,10 @@ export default function Sidebar({ userName, userEmail }: SidebarProps) {
                   ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600"
                   : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
               }`}
-              onClick={() => router(item.path)}
+              onClick={() => {
+                navigate(item.path);
+                setIsMobileMenuOpen(false); // 모바일에서 메뉴 클릭 시 사이드바 닫기
+              }}
             >
               <div
                 className={`w-8 h-8 rounded-lg ${item.color} flex items-center justify-center mr-3`}
@@ -77,17 +105,15 @@ export default function Sidebar({ userName, userEmail }: SidebarProps) {
           </Button>
         </div>
       </div>
+
       {/* 사용자 정보 */}
       <div className="p-4 border-t border-gray-100 dark:border-gray-700">
         <div className="flex items-center gap-3 mb-3">
-          {/* <Avatar className="h-10 w-10">
-                        <AvatarFallback className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">{userName.charAt(0)}</AvatarFallback>
-                    </Avatar> */}
-          <div className="h-10 w-10 rounded-full">
-            <div className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 flex h-full w-full items-center justify-center rounded-full">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
               {userName.charAt(0)}
-            </div>
-          </div>
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
             <p className="font-medium text-sm truncate text-gray-900 dark:text-white">
               {userName}
@@ -102,7 +128,10 @@ export default function Sidebar({ userName, userEmail }: SidebarProps) {
             variant="ghost"
             size="sm"
             className="flex-1 text-gray-600 dark:text-gray-400"
-            onClick={() => router("/settings")}
+            onClick={() => {
+              navigate("/settings");
+              setIsMobileMenuOpen(false);
+            }}
           >
             <Settings className="h-4 w-4 mr-2" />
             설정
@@ -118,5 +147,38 @@ export default function Sidebar({ userName, userEmail }: SidebarProps) {
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {/* 모바일 햄버거 메뉴 버튼 - 모바일에서만 표시 */}
+      <div className="md:hidden fixed top-4 left-4 z-50">
+        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full bg-white dark:bg-gray-800 shadow-md"
+            >
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">메뉴 열기</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[280px] p-0 overflow-y-auto">
+            <SheetTitle className="sr-only">사이드바 메뉴</SheetTitle>
+            <SheetDescription className="sr-only">
+              이 사이드바에서는 페이지 탐색, 사용자 설정, 로그아웃 등을 할 수
+              있습니다.
+            </SheetDescription>
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* 데스크톱 사이드바 - 모바일에서는 숨김 */}
+      <div className="hidden md:flex h-full w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-col z-20 overflow-hidden">
+        <SidebarContent />
+      </div>
+    </>
   );
 }

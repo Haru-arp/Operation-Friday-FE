@@ -36,7 +36,7 @@ export const RootLayout = () => {
     <LayoutContainer>
       <div className="bg-gray-50 dark:bg-gray-900 flex flex-1 size-full">
         <Sidebar userName={userName} userEmail={userEmail} />
-        <div className="flex flex-col flex-1 min-h-screen ">
+        <div className="flex flex-col flex-1 min-h-screen pt-16 md:pt-0  ">
           <main className="p-4 flex-1 overflow-y-auto ">
             <Outlet />
           </main>
