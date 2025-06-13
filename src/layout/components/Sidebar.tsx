@@ -1,11 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Settings, LogOut, Sparkles, Moon, Sun } from "lucide-react";
+import { Settings, LogOut, Sparkles } from "lucide-react";
 import { menuItems } from "@/constants/routeItems";
-
-import { useState, useEffect } from "react";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 
 interface SidebarProps {
   userName: string;
