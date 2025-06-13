@@ -21,7 +21,7 @@ export default function Sidebar({ userName, userEmail }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [_mounted, setMounted] = useState(false);
 
   // 컴포넌트가 마운트된 후에만 테마 관련 UI를 렌더링
   useEffect(() => {
