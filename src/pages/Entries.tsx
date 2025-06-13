@@ -34,7 +34,7 @@ export default function Entries() {
   );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [_isLoading, setIsLoading] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const itemsPerPage = 10;
 
@@ -141,18 +141,18 @@ export default function Entries() {
     }
   };
 
-  const handleUpdateTransaction = (updatedTransaction: Transaction) => {
-    try {
-      const updatedTransactions = transactions.map((t) =>
-        t.id === updatedTransaction.id ? updatedTransaction : t
-      );
-      setTransactions(updatedTransactions);
-      localStorage.setItem("transactions", JSON.stringify(updatedTransactions));
-    } catch (error) {
-      console.error("거래 업데이트 중 오류 발생:", error);
-      alert("거래를 업데이트하는 중 오류가 발생했습니다.");
-    }
-  };
+  //   const handleUpdateTransaction = (updatedTransaction: Transaction) => {
+  //     try {
+  //       const updatedTransactions = transactions.map((t) =>
+  //         t.id === updatedTransaction.id ? updatedTransaction : t
+  //       );
+  //       setTransactions(updatedTransactions);
+  //       localStorage.setItem("transactions", JSON.stringify(updatedTransactions));
+  //     } catch (error) {
+  //       console.error("거래 업데이트 중 오류 발생:", error);
+  //       alert("거래를 업데이트하는 중 오류가 발생했습니다.");
+  //     }
+  //   };
 
   return (
     <div className="md:p-8 space-y-6">
