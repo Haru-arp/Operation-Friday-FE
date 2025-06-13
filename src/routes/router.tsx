@@ -8,6 +8,7 @@ import LoginPage from "@/pages/Login";
 import { AuthGuard } from "@/layout/components/AuthGuard";
 import Settings from "@/pages/Settings";
 import Signup from "@/pages/Signup";
+import EditTransaction from "@/pages/EditTransaction";
 
 export const routerChildren: RouteObject[] = [
   {
@@ -22,6 +23,10 @@ export const routerChildren: RouteObject[] = [
       {
         path: "/transaction/new",
         element: <Insert />,
+      },
+      {
+        path: "/transaction/edit/:transactionId",
+        element: <EditTransaction />,
       },
       {
         path: "/transactions",
