@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Banknote, TrendingUp, RefreshCw, HandCoins, DollarSign, Calendar, Check, Info, RotateCcw, Clock, ArrowLeftRight } from "lucide-react";
+import { CreditCard, Banknote, TrendingUp, RefreshCw, HandCoins, DollarSign, Calendar, Check, Info, Clock, ArrowLeftRight } from "lucide-react";
+// RotateCcw,
 import type { Transaction } from "@/types/transaction";
 import type { LucideIcon } from "lucide-react";
 

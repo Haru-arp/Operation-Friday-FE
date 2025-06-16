@@ -1,5 +1,5 @@
-import { LayoutDashboard, PlusCircle, List, BarChart3, Target, MessageCircle, Wallet, BookOpen } from "lucide-react";
-
+import { LayoutDashboard, PlusCircle, List, Wallet, BookOpen } from "lucide-react";
+// BarChart3, Target, MessageCircle,
 export const menuItems = [
     { icon: LayoutDashboard, label: "대시보드", path: "/", color: "bg-gray-500" },
     { icon: PlusCircle, label: "거래입력", path: "/transaction/new", color: "bg-gray-600" },
