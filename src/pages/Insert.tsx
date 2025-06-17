@@ -1,10 +1,10 @@
 import type { Transaction } from "@/types/transaction";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 import { TransactionWizard } from "@/components/ui/wizard/transaction-wizard";
 
 export default function Insert() {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
     const handleSaveTransaction = (transaction: Transaction) => {
         try {
@@ -23,7 +23,7 @@ export default function Insert() {
 
             transactions.push(newTransaction);
             localStorage.setItem("transactions", JSON.stringify(transactions));
-            navigate("/transactions");
+            // navigate("/transactions");
         } catch (err) {
             console.log("거래 저장 중 오류 발생", err);
             alert("거래를 저장하는 중 오류가 발생했습니다.");
