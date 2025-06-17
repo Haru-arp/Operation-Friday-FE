@@ -248,6 +248,7 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
         try {
             const updatedTransactions = transactions.filter((t) => t.id !== id);
             setTransactions(updatedTransactions);
+            setRecentTransactions(updatedTransactions.slice(-10).reverse()); // ✅ 추가
             localStorage.setItem("transactions", JSON.stringify(updatedTransactions));
         } catch (error) {
             console.error("거래 삭제 중 오류 발생:", error);
