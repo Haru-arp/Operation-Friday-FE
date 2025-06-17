@@ -9,6 +9,8 @@ import { AuthGuard } from "@/layout/components/AuthGuard";
 import Settings from "@/pages/Settings";
 import Signup from "@/pages/Signup";
 import EditTransaction from "@/pages/EditTransaction";
+import Accounts from "@/pages/Accounts";
+import Guide from "@/pages/Guide";
 
 export const routerChildren: RouteObject[] = [
   {
@@ -46,11 +48,11 @@ export const routerChildren: RouteObject[] = [
       },
       {
         path: "/accounts",
-        element: "accounts",
+        element: <Accounts />,
       },
       {
         path: "/guide",
-        element: "guide",
+        element: <Guide />,
       },
       {
         path: "/settings",
