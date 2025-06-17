@@ -367,7 +367,10 @@ export default function Home() {
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">{getTransactionIcon(transaction.type)}</div>
                                         <div>
-                                            <h4 className="font-medium text-sm text-gray-900 dark:text-white">{transaction.description}</h4>
+                                            <h4 className="text-sm text-gray-900 dark:text-white">
+                                                <span className="font-bold">{transaction.item}</span>
+                                                {transaction.description && <span className="font-normal"> - {transaction.description}</span>}
+                                            </h4>
                                             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                                                 <span>{transaction.leftAccountName}</span>
                                                 <ArrowLeftRight className="h-3 w-3" />
