@@ -34,6 +34,23 @@ export const getTransactionIcon = (type: TransactionType): JSX.Element | null =>
 //             return null;
 //     }
 // };
+/** 가이드에서 쓰는 글씨색 함수 */
+export const getAccountTypeColor = (type: string) => {
+    switch (type) {
+        case "자산":
+            return "text-blue-600 dark:text-blue-400";
+        case "부채":
+            return "text-red-600 dark:text-red-400";
+        case "자본":
+            return "text-purple-600 dark:text-purple-400";
+        case "수익":
+            return "text-green-600 dark:text-green-400";
+        case "비용":
+            return "text-orange-600 dark:text-orange-400";
+        default:
+            return "text-gray-600 dark:text-gray-400";
+    }
+};
 
 /** 거래 색상 클래스 반환 함수 */
 export const getTransactionColor = (type: TransactionType): string => {

@@ -7,8 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, TrendingUp, RefreshCw, HandCoins, DollarSign, Calendar, Check, Info, Plus, Minus, TrendingDown } from "lucide-react";
+import { CreditCard, TrendingUp, RefreshCw, HandCoins, DollarSign, Calendar, Check, Info, Plus, Minus, TrendingDown, Banknote } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
+import type { TransactionType } from "./transaction-wizard";
 
 interface InitialTransactionWizardProps {
     onSave: (transaction: Transaction) => void;
@@ -38,6 +39,65 @@ interface AccountData {
 interface AccountWithGroupPath extends Account {
     groupPath: string;
 }
+
+// 주요 거래 유형 (1-5번)
+const mainTransactionTypes = [
+    {
+        id: "cash_expense",
+        name: "현금 지출",
+        icon: Banknote,
+        color: "bg-red-500",
+        description: "자산(현금, 계좌)을 써서 비용 발생",
+        example: "편의점 결제, 병원비, 배달앱 결제",
+        debit: "비용",
+        credit: "자산-",
+        category: "지출",
+    },
+    {
+        id: "credit_expense",
+        name: "외상 지출",
+        icon: CreditCard,
+        color: "bg-orange-500",
+        description: "신용카드 등 외상으로 지출 발생",
+        example: "신용카드 식사 결제, 병원비 카드결제",
+        debit: "비용",
+        credit: "부채+",
+        category: "지출",
+    },
+    {
+        id: "income",
+        name: "수익 발생",
+        icon: TrendingUp,
+        color: "bg-green-500",
+        description: "수익이 자산(현금, 계좌)으로 들어옴",
+        example: "월급, 이자수익, 부업 수입",
+        debit: "자산+",
+        credit: "수익",
+        category: "수익",
+    },
+    {
+        id: "asset_transfer",
+        name: "자산 이동",
+        icon: RefreshCw,
+        color: "bg-blue-500",
+        description: "자산 간 이동",
+        example: "통장 간 이체, 현금 인출/입금",
+        debit: "자산+",
+        credit: "자산-",
+        category: "자산 이동",
+    },
+    {
+        id: "debt_repayment",
+        name: "부채 상환",
+        icon: HandCoins,
+        color: "bg-purple-500",
+        description: "자산으로 부채를 갚음",
+        example: "계좌이체로 카드값 결제, 대출 상환",
+        debit: "부채-",
+        credit: "자산-",
+        category: "지출",
+    },
+] as const satisfies TransactionType[];
 
 // 설정용 거래 유형 (6-11번)
 const settingTransactionTypes = {
@@ -117,7 +177,8 @@ const settingTransactionTypes = {
 export const InitialTransactionWizard = ({ onSave, transactionType }: InitialTransactionWizardProps) => {
     const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
     const [amount, setAmount] = useState("");
-    const [memo, setMemo] = useState("");
+    const [memo, setMemo] = useState<string | null>();
+    const [item, setItem] = useState("");
     const [debitAccount, setDebitAccount] = useState("");
     const [creditAccount, setCreditAccount] = useState("");
     const [accountData, setAccountData] = useState<AccountData>({
@@ -134,7 +195,7 @@ export const InitialTransactionWizard = ({ onSave, transactionType }: InitialTra
 
     useEffect(() => {
         if (selectedType) {
-            setMemo(`${selectedType.name} - `);
+            setMemo(null);
         }
     }, [selectedType]);
 
@@ -158,9 +219,9 @@ export const InitialTransactionWizard = ({ onSave, transactionType }: InitialTra
 
         const transaction: Transaction = {
             id: "",
-            item: "",
+            item,
             date,
-            description: memo,
+            description: memo ?? "",
             amount: Number(amount),
             leftAccount: debitAccount,
             rightAccount: creditAccount,
@@ -253,8 +314,7 @@ export const InitialTransactionWizard = ({ onSave, transactionType }: InitialTra
                         <strong>예시:</strong> {selectedType.example}
                     </div>
                 </div>
-
-                {/* 분개 구조 표시 */}
+                {/* 분개 구조 표시
                 <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <h3 className="font-medium text-gray-900 dark:text-white mb-3">분개 구조</h3>
                     <div className="grid grid-cols-2 gap-4">
@@ -279,16 +339,22 @@ export const InitialTransactionWizard = ({ onSave, transactionType }: InitialTra
                             </div>
                         </div>
                     </div>
-                </div>
-
+                </div> */}
                 {/* 기본 정보 입력 */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1">
                     <div className="space-y-2">
                         <Label htmlFor="date">날짜</Label>
                         <div className="relative">
                             <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className="pl-10" />
                             <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                         </div>
+                    </div>
+                </div>
+                {/* 아이템과 금액 */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="item">아이템</Label>
+                        <Input id="item" type="text" placeholder="아이템을 입력하세요" value={item} onChange={(e) => setItem(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="amount">금액</Label>
@@ -299,16 +365,16 @@ export const InitialTransactionWizard = ({ onSave, transactionType }: InitialTra
                         </div>
                     </div>
                 </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="memo">메모</Label>
-                    <Textarea id="memo" placeholder="거래 내용을 입력하세요" value={memo} onChange={(e) => setMemo(e.target.value)} rows={2} />
-                </div>
-
                 {/* 계정 선택 */}
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="debit-account">차변 계정 ({selectedType.debit})</Label>
+                        <Label htmlFor="debit-account">
+                            차변 계정
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                                차변: {selectedType?.debit}
+                            </Badge>
+                            {/* ({selectedType.debit}) */}
+                        </Label>
                         <Select value={debitAccount} onValueChange={setDebitAccount}>
                             <SelectTrigger id="debit-account">
                                 <SelectValue placeholder="차변 계정 선택" />
@@ -326,7 +392,13 @@ export const InitialTransactionWizard = ({ onSave, transactionType }: InitialTra
                         </Select>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="credit-account">대변 계정 ({selectedType.credit})</Label>
+                        <Label htmlFor="credit-account">
+                            대변 계정
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                                대변: {selectedType?.credit}
+                            </Badge>
+                            {/* ({selectedType.credit}) */}
+                        </Label>
                         <Select value={creditAccount} onValueChange={setCreditAccount}>
                             <SelectTrigger id="credit-account">
                                 <SelectValue placeholder="대변 계정 선택" />
@@ -344,7 +416,11 @@ export const InitialTransactionWizard = ({ onSave, transactionType }: InitialTra
                         </Select>
                     </div>
                 </div>
-
+                {/* 메모 */}
+                <div className="space-y-2">
+                    <Label htmlFor="memo">메모</Label>
+                    <Textarea id="memo" placeholder="거래 내용을 입력하세요" value={memo ?? ""} onChange={(e) => setMemo(e.target.value)} rows={2} />
+                </div>
                 {/* 거래 요약 */}
                 {debitAccount && creditAccount && amount && (
                     <Alert className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
@@ -365,7 +441,6 @@ export const InitialTransactionWizard = ({ onSave, transactionType }: InitialTra
                         </AlertDescription>
                     </Alert>
                 )}
-
                 <Button onClick={handleSave} className="w-full bg-green-600 hover:bg-green-700 text-white" disabled={!amount || !debitAccount || !creditAccount}>
                     <Check className="mr-2 h-4 w-4" /> 거래 저장
                 </Button>
