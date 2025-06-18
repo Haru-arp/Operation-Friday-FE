@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Wallet, CreditCard, TrendingUp, RefreshCw, Minus, ArrowRightLeft, PlusCircle, Building, TrendingDown, AlertTriangle, Settings, Plus, Calculator } from "lucide-react";
 import { getAccountTypeColor } from "@/lib/transactionHelpers";
-import clsx from "clsx";
 
 // 11개 거래 유형별 분개 가이드 데이터
 const transactionGuides = {

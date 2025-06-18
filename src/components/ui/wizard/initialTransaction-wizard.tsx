@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, TrendingUp, RefreshCw, HandCoins, DollarSign, Calendar, Check, Info, Plus, Minus, TrendingDown, Banknote } from "lucide-react";
+import { CreditCard, TrendingUp, RefreshCw, HandCoins, DollarSign, Calendar, Check, Info, TrendingDown, Banknote } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
 import type { TransactionType } from "./transaction-wizard";
 
@@ -39,65 +39,6 @@ interface AccountData {
 interface AccountWithGroupPath extends Account {
     groupPath: string;
 }
-
-// 주요 거래 유형 (1-5번)
-const mainTransactionTypes = [
-    {
-        id: "cash_expense",
-        name: "현금 지출",
-        icon: Banknote,
-        color: "bg-red-500",
-        description: "자산(현금, 계좌)을 써서 비용 발생",
-        example: "편의점 결제, 병원비, 배달앱 결제",
-        debit: "비용",
-        credit: "자산-",
-        category: "지출",
-    },
-    {
-        id: "credit_expense",
-        name: "외상 지출",
-        icon: CreditCard,
-        color: "bg-orange-500",
-        description: "신용카드 등 외상으로 지출 발생",
-        example: "신용카드 식사 결제, 병원비 카드결제",
-        debit: "비용",
-        credit: "부채+",
-        category: "지출",
-    },
-    {
-        id: "income",
-        name: "수익 발생",
-        icon: TrendingUp,
-        color: "bg-green-500",
-        description: "수익이 자산(현금, 계좌)으로 들어옴",
-        example: "월급, 이자수익, 부업 수입",
-        debit: "자산+",
-        credit: "수익",
-        category: "수익",
-    },
-    {
-        id: "asset_transfer",
-        name: "자산 이동",
-        icon: RefreshCw,
-        color: "bg-blue-500",
-        description: "자산 간 이동",
-        example: "통장 간 이체, 현금 인출/입금",
-        debit: "자산+",
-        credit: "자산-",
-        category: "자산 이동",
-    },
-    {
-        id: "debt_repayment",
-        name: "부채 상환",
-        icon: HandCoins,
-        color: "bg-purple-500",
-        description: "자산으로 부채를 갚음",
-        example: "계좌이체로 카드값 결제, 대출 상환",
-        debit: "부채-",
-        credit: "자산-",
-        category: "지출",
-    },
-] as const satisfies TransactionType[];
 
 // 설정용 거래 유형 (6-11번)
 const settingTransactionTypes = {
