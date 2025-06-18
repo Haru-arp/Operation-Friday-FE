@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, TrendingUp, RefreshCw, HandCoins, DollarSign, Calendar, Check, Info, TrendingDown, Banknote } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
-import type { TransactionType } from "./transaction-wizard";
 
 interface InitialTransactionWizardProps {
     onSave: (transaction: Transaction) => void;
