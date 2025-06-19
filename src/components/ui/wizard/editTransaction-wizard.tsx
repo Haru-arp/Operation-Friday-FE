@@ -111,7 +111,7 @@ export const EditTransactionWizard = ({
   const [item, setItem] = useState("");
   const [debitAccount, setDebitAccount] = useState("");
   const [creditAccount, setCreditAccount] = useState("");
-  const [type, setType] = useState<Transaction["type"]>("expense");
+  const [_type, setType] = useState<Transaction["type"]>("expense");
   const [accountData, setAccountData] = useState<AccountData>({
     groups: [],
     accounts: [],
