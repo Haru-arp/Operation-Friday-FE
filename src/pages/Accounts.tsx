@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,13 +32,43 @@ import {
   MoreVertical,
   FolderPlus,
   FileText,
+  Info,
 } from "lucide-react";
+
+type AccountSettingType = AccountSettings["type"];
+
+interface CreditCardSettings {
+  usageStartDay: number;
+  usageEndDay: number;
+  paymentDay: number;
+  linkedAssetId: string;
+  targetAmount?: number;
+  installmentRounding: "truncate_1" | "truncate_100"; // 할부 처리 방식
+}
+
+interface DebitCardSettings {
+  linkedAssetId: string;
+}
+
+interface AccountSettings {
+  type:
+    | "general"
+    | "partner"
+    | "liquid_cash"
+    | "credit_card"
+    | "debit_card"
+    | "variable"
+    | "fixed";
+  creditCard?: CreditCardSettings;
+  debitCard?: DebitCardSettings;
+}
 
 interface Account {
   id: string;
   name: string;
   groupId?: string;
   type: AccountType;
+  settings?: AccountSettings;
 }
 
 interface AccountGroup {
@@ -89,6 +118,90 @@ const accountTypeInfo = {
   },
 };
 
+// 계정 종류별 설정 옵션
+const accountSettingsOptions = {
+  asset: [
+    {
+      value: "general",
+      label: "일반 항목",
+      description: "특별한 특징이 없는 자산 항목",
+    },
+    {
+      value: "partner",
+      label: "거래처 관리 항목",
+      description: "받을 돈, 보험상품 등 거래처별 관리",
+    },
+    {
+      value: "liquid_cash",
+      label: "유동성 현금",
+      description: "쉽고 빠르게 현금화 가능한 자산",
+    },
+  ],
+  liability: [
+    {
+      value: "general",
+      label: "일반 항목",
+      description: "특별한 특징이 없는 부채 항목",
+    },
+    {
+      value: "partner",
+      label: "거래처 관리 항목",
+      description: "갚을 돈, 대출상품 등 거래처별 관리",
+    },
+    {
+      value: "credit_card",
+      label: "신용카드",
+      description: "일반적인 신용카드",
+    },
+    {
+      value: "debit_card",
+      label: "체크(직불)카드",
+      description: "연결된 계좌에서 즉시 차감",
+    },
+  ],
+  equity: [
+    {
+      value: "general",
+      label: "일반 항목",
+      description: "특별한 특징이 없는 자본 항목",
+    },
+  ],
+  revenue: [
+    {
+      value: "general",
+      label: "일반 항목",
+      description: "특별한 특징이 없는 수익 항목",
+    },
+    {
+      value: "fixed",
+      label: "고정 항목",
+      description: "월급 등 정기적이고 예측 가능한 수익",
+    },
+    {
+      value: "variable",
+      label: "유동 항목",
+      description: "투잡수익 등 즉흥적이고 들쭉날쭉한 수익",
+    },
+  ],
+  expense: [
+    {
+      value: "general",
+      label: "일반 항목",
+      description: "특별한 특징이 없는 비용 항목",
+    },
+    {
+      value: "fixed",
+      label: "고정 항목",
+      description: "주거비, 식비 등 정기적이고 예측 가능한 비용",
+    },
+    {
+      value: "variable",
+      label: "유동 항목",
+      description: "유흥비, 경조사비 등 즉흥적이고 들쭉날쭉한 비용",
+    },
+  ],
+};
+
 // 새로운 계정 구조
 const defaultAccountData: AccountData = {
   groups: [
@@ -123,8 +236,20 @@ const defaultAccountData: AccountData = {
   accounts: [
     // === 자산 계정 ===
     // 현금성 자산
-    { id: "cash", name: "현금", groupId: "asset_cash", type: "asset" },
-    { id: "deposit", name: "예금", groupId: "asset_cash", type: "asset" },
+    {
+      id: "cash",
+      name: "현금",
+      groupId: "asset_cash",
+      type: "asset",
+      settings: { type: "liquid_cash" },
+    },
+    {
+      id: "deposit",
+      name: "예금",
+      groupId: "asset_cash",
+      type: "asset",
+      settings: { type: "liquid_cash" },
+    },
     { id: "savings", name: "적금", groupId: "asset_cash", type: "asset" },
     {
       id: "time_deposit",
@@ -212,6 +337,7 @@ const defaultAccountData: AccountData = {
       name: "대여금",
       groupId: "asset_other",
       type: "asset",
+      settings: { type: "partner" },
     },
     {
       id: "deposit_paid",
@@ -279,6 +405,7 @@ const defaultAccountData: AccountData = {
       name: "개인차용금",
       groupId: "liability_other",
       type: "liability",
+      settings: { type: "partner" },
     },
     {
       id: "unpaid_bills",
@@ -327,30 +454,35 @@ const defaultAccountData: AccountData = {
       name: "기본급",
       groupId: "revenue_labor",
       type: "revenue",
+      settings: { type: "fixed" },
     },
     {
       id: "salary_bonus",
       name: "상여금",
       groupId: "revenue_labor",
       type: "revenue",
+      settings: { type: "variable" },
     },
     {
       id: "salary_overtime",
       name: "야근수당",
       groupId: "revenue_labor",
       type: "revenue",
+      settings: { type: "variable" },
     },
     {
       id: "part_time",
       name: "아르바이트",
       groupId: "revenue_labor",
       type: "revenue",
+      settings: { type: "variable" },
     },
     {
       id: "freelance",
       name: "프리랜서",
       groupId: "revenue_labor",
       type: "revenue",
+      settings: { type: "variable" },
     },
 
     // 사업소득
@@ -359,18 +491,21 @@ const defaultAccountData: AccountData = {
       name: "개인사업 수입",
       groupId: "revenue_business",
       type: "revenue",
+      settings: { type: "variable" },
     },
     {
       id: "rental_income",
       name: "임대수입",
       groupId: "revenue_business",
       type: "revenue",
+      settings: { type: "fixed" },
     },
     {
       id: "online_sales",
       name: "온라인판매",
       groupId: "revenue_business",
       type: "revenue",
+      settings: { type: "variable" },
     },
 
     // 투자수익
@@ -379,30 +514,35 @@ const defaultAccountData: AccountData = {
       name: "주식 배당금",
       groupId: "revenue_investment",
       type: "revenue",
+      settings: { type: "variable" },
     },
     {
       id: "stock_profit",
       name: "주식 매매차익",
       groupId: "revenue_investment",
       type: "revenue",
+      settings: { type: "variable" },
     },
     {
       id: "deposit_interest",
       name: "예적금 이자",
       groupId: "revenue_investment",
       type: "revenue",
+      settings: { type: "fixed" },
     },
     {
       id: "fund_profit",
       name: "펀드 수익",
       groupId: "revenue_investment",
       type: "revenue",
+      settings: { type: "variable" },
     },
     {
       id: "realestate_profit",
       name: "부동산 매매차익",
       groupId: "revenue_investment",
       type: "revenue",
+      settings: { type: "variable" },
     },
 
     // 기타수익
@@ -411,26 +551,42 @@ const defaultAccountData: AccountData = {
       name: "용돈",
       groupId: "revenue_other",
       type: "revenue",
+      settings: { type: "variable" },
     },
-    { id: "pension", name: "연금", groupId: "revenue_other", type: "revenue" },
+    {
+      id: "pension",
+      name: "연금",
+      groupId: "revenue_other",
+      type: "revenue",
+      settings: { type: "fixed" },
+    },
     {
       id: "insurance_payout",
       name: "보험금",
       groupId: "revenue_other",
       type: "revenue",
+      settings: { type: "variable" },
     },
-    { id: "prize", name: "상금", groupId: "revenue_other", type: "revenue" },
+    {
+      id: "prize",
+      name: "상금",
+      groupId: "revenue_other",
+      type: "revenue",
+      settings: { type: "variable" },
+    },
     {
       id: "tax_refund",
       name: "환급금",
       groupId: "revenue_other",
       type: "revenue",
+      settings: { type: "variable" },
     },
     {
       id: "gift_money",
       name: "증여",
       groupId: "revenue_other",
       type: "revenue",
+      settings: { type: "variable" },
     },
 
     // === 비용 계정 ===
@@ -440,42 +596,49 @@ const defaultAccountData: AccountData = {
       name: "월세/관리비",
       groupId: "expense_housing",
       type: "expense",
+      settings: { type: "fixed" },
     },
     {
       id: "mortgage_payment",
       name: "주택대출(원금+이자)",
       groupId: "expense_housing",
       type: "expense",
+      settings: { type: "fixed" },
     },
     {
       id: "electricity",
       name: "전기요금",
       groupId: "expense_housing",
       type: "expense",
+      settings: { type: "fixed" },
     },
     {
       id: "gas",
       name: "가스요금",
       groupId: "expense_housing",
       type: "expense",
+      settings: { type: "fixed" },
     },
     {
       id: "water",
       name: "수도요금",
       groupId: "expense_housing",
       type: "expense",
+      settings: { type: "fixed" },
     },
     {
       id: "mobile",
       name: "휴대폰요금",
       groupId: "expense_housing",
       type: "expense",
+      settings: { type: "fixed" },
     },
     {
       id: "internet",
       name: "인터넷요금",
       groupId: "expense_housing",
       type: "expense",
+      settings: { type: "fixed" },
     },
 
     // 생활비
@@ -484,50 +647,70 @@ const defaultAccountData: AccountData = {
       name: "식료품",
       groupId: "expense_living",
       type: "expense",
+      settings: { type: "fixed" },
     },
     {
       id: "restaurant",
       name: "외식",
       groupId: "expense_living",
       type: "expense",
+      settings: { type: "variable" },
     },
     {
       id: "delivery",
       name: "배달",
       groupId: "expense_living",
       type: "expense",
+      settings: { type: "variable" },
     },
     {
       id: "public_transport",
       name: "대중교통",
       groupId: "expense_living",
       type: "expense",
+      settings: { type: "fixed" },
     },
-    { id: "taxi", name: "택시", groupId: "expense_living", type: "expense" },
+    {
+      id: "taxi",
+      name: "택시",
+      groupId: "expense_living",
+      type: "expense",
+      settings: { type: "variable" },
+    },
     {
       id: "parking",
       name: "주차비",
       groupId: "expense_living",
       type: "expense",
+      settings: { type: "variable" },
     },
-    { id: "fuel", name: "기름값", groupId: "expense_living", type: "expense" },
+    {
+      id: "fuel",
+      name: "기름값",
+      groupId: "expense_living",
+      type: "expense",
+      settings: { type: "variable" },
+    },
     {
       id: "cosmetics",
       name: "화장품",
       groupId: "expense_living",
       type: "expense",
+      settings: { type: "variable" },
     },
     {
       id: "clothing",
       name: "의류",
       groupId: "expense_living",
       type: "expense",
+      settings: { type: "variable" },
     },
     {
       id: "daily_goods",
       name: "생활용품",
       groupId: "expense_living",
       type: "expense",
+      settings: { type: "variable" },
     },
 
     // 의료/건강비
@@ -536,52 +719,72 @@ const defaultAccountData: AccountData = {
       name: "병원비",
       groupId: "expense_health",
       type: "expense",
+      settings: { type: "variable" },
     },
     {
       id: "medicine",
       name: "약값",
       groupId: "expense_health",
       type: "expense",
+      settings: { type: "variable" },
     },
     {
       id: "health_checkup",
       name: "건강검진",
       groupId: "expense_health",
       type: "expense",
+      settings: { type: "variable" },
     },
-    { id: "gym", name: "헬스장", groupId: "expense_health", type: "expense" },
+    {
+      id: "gym",
+      name: "헬스장",
+      groupId: "expense_health",
+      type: "expense",
+      settings: { type: "fixed" },
+    },
     {
       id: "beauty",
       name: "이미용비",
       groupId: "expense_health",
       type: "expense",
+      settings: { type: "variable" },
     },
 
     // 문화/여가비
-    { id: "travel", name: "여행", groupId: "expense_culture", type: "expense" },
+    {
+      id: "travel",
+      name: "여행",
+      groupId: "expense_culture",
+      type: "expense",
+      settings: { type: "variable" },
+    },
     {
       id: "movie",
       name: "영화/공연",
       groupId: "expense_culture",
       type: "expense",
+      settings: { type: "variable" },
     },
     {
       id: "hobby",
       name: "취미활동",
       groupId: "expense_culture",
       type: "expense",
+      settings: { type: "variable" },
     },
     {
       id: "game",
       name: "게임/앱결제",
       groupId: "expense_culture",
       type: "expense",
+      settings: { type: "variable" },
     },
     {
       id: "books",
       name: "도서구입",
       groupId: "expense_culture",
       type: "expense",
+      settings: { type: "variable" },
     },
 
     // 사회적비용
@@ -590,32 +793,49 @@ const defaultAccountData: AccountData = {
       name: "축의금",
       groupId: "expense_social",
       type: "expense",
+      settings: { type: "variable" },
     },
     {
       id: "funeral_gift",
       name: "조의금",
       groupId: "expense_social",
       type: "expense",
+      settings: { type: "variable" },
     },
     {
       id: "company_dinner",
       name: "회식",
       groupId: "expense_social",
       type: "expense",
+      settings: { type: "variable" },
     },
-    { id: "meeting", name: "모임", groupId: "expense_social", type: "expense" },
-    { id: "gift", name: "선물", groupId: "expense_social", type: "expense" },
+    {
+      id: "meeting",
+      name: "모임",
+      groupId: "expense_social",
+      type: "expense",
+      settings: { type: "variable" },
+    },
+    {
+      id: "gift",
+      name: "선물",
+      groupId: "expense_social",
+      type: "expense",
+      settings: { type: "variable" },
+    },
     {
       id: "education",
       name: "학원/강의",
       groupId: "expense_social",
       type: "expense",
+      settings: { type: "fixed" },
     },
     {
       id: "certification",
       name: "자격증",
       groupId: "expense_social",
       type: "expense",
+      settings: { type: "variable" },
     },
 
     // 금융/세금/기타
@@ -624,38 +844,56 @@ const defaultAccountData: AccountData = {
       name: "건강보험료",
       groupId: "expense_financial",
       type: "expense",
+      settings: { type: "fixed" },
     },
     {
       id: "car_insurance",
       name: "자동차보험료",
       groupId: "expense_financial",
       type: "expense",
+      settings: { type: "fixed" },
     },
     {
       id: "life_insurance_fee",
       name: "생명보험료",
       groupId: "expense_financial",
       type: "expense",
+      settings: { type: "fixed" },
     },
-    { id: "tax", name: "세금", groupId: "expense_financial", type: "expense" },
+    {
+      id: "tax",
+      name: "세금",
+      groupId: "expense_financial",
+      type: "expense",
+      settings: { type: "fixed" },
+    },
     {
       id: "fee",
       name: "수수료",
       groupId: "expense_financial",
       type: "expense",
+      settings: { type: "variable" },
     },
-    { id: "fine", name: "벌금", groupId: "expense_financial", type: "expense" },
+    {
+      id: "fine",
+      name: "벌금",
+      groupId: "expense_financial",
+      type: "expense",
+      settings: { type: "variable" },
+    },
     {
       id: "investment_cost",
       name: "투자비용",
       groupId: "expense_financial",
       type: "expense",
+      settings: { type: "variable" },
     },
     {
       id: "misc",
       name: "기타잡비",
       groupId: "expense_financial",
       type: "expense",
+      settings: { type: "variable" },
     },
   ],
 };
@@ -671,6 +909,9 @@ export default function Accounts() {
   const [accountFormData, setAccountFormData] = useState({
     name: "",
     groupId: "",
+  });
+  const [accountSettings, setAccountSettings] = useState<AccountSettings>({
+    type: "general",
   });
 
   useEffect(() => {
@@ -782,12 +1023,14 @@ export default function Accounts() {
   const handleAddAccount = (groupId?: string) => {
     setEditingAccount(null);
     setAccountFormData({ name: "", groupId: groupId || "" });
+    setAccountSettings({ type: "general" });
     setIsAccountDialogOpen(true);
   };
 
   const handleEditAccount = (account: Account) => {
     setEditingAccount(account);
     setAccountFormData({ name: account.name, groupId: account.groupId || "" });
+    setAccountSettings(account.settings || { type: "general" });
     setIsAccountDialogOpen(true);
   };
 
@@ -808,32 +1051,45 @@ export default function Accounts() {
       return;
     }
 
+    // 신용카드/직불카드 설정 검증
+    if (accountSettings.type === "credit_card" && accountSettings.creditCard) {
+      if (!accountSettings.creditCard.linkedAssetId) {
+        alert("대금결제항목을 선택해주세요.");
+        return;
+      }
+    }
+
+    if (accountSettings.type === "debit_card" && accountSettings.debitCard) {
+      if (!accountSettings.debitCard.linkedAssetId) {
+        alert("연결된 자산 계정을 선택해주세요.");
+        return;
+      }
+    }
+
     const newData = { ...accountData };
+    const accountWithSettings = {
+      id: editingAccount?.id || `account_${Date.now()}`,
+      name: accountFormData.name,
+      groupId: accountFormData.groupId || undefined,
+      type: selectedType,
+      settings: accountSettings,
+    };
 
     if (editingAccount) {
       const index = newData.accounts.findIndex(
         (a) => a.id === editingAccount.id
       );
       if (index !== -1) {
-        newData.accounts[index] = {
-          ...editingAccount,
-          name: accountFormData.name,
-          groupId: accountFormData.groupId || undefined,
-        };
+        newData.accounts[index] = accountWithSettings;
       }
     } else {
-      const newAccount: Account = {
-        id: `account_${Date.now()}`,
-        name: accountFormData.name,
-        groupId: accountFormData.groupId || undefined,
-        type: selectedType,
-      };
-      newData.accounts.push(newAccount);
+      newData.accounts.push(accountWithSettings);
     }
 
     setAccountData(newData);
     saveAccountData(newData);
     setIsAccountDialogOpen(false);
+    setAccountSettings({ type: "general" }); // 폼 초기화
   };
 
   const getGroupsByType = (type: AccountType) => {
@@ -850,6 +1106,34 @@ export default function Accounts() {
 
   const getUngroupedAccounts = (type: AccountType) => {
     return accountData.accounts.filter((a) => a.type === type && !a.groupId);
+  };
+
+  const getSettingsBadge = (account: Account) => {
+    if (!account.settings || account.settings.type === "general") return null;
+
+    const settingsLabels = {
+      partner: "거래처",
+      liquid_cash: "유동성",
+      credit_card: "신용카드",
+      debit_card: "직불카드",
+      fixed: "고정",
+      variable: "유동",
+    };
+
+    const colors = {
+      partner: "bg-purple-100 text-purple-800",
+      liquid_cash: "bg-blue-100 text-blue-800",
+      credit_card: "bg-red-100 text-red-800",
+      debit_card: "bg-green-100 text-green-800",
+      fixed: "bg-gray-100 text-gray-800",
+      variable: "bg-orange-100 text-orange-800",
+    };
+
+    return (
+      <Badge className={`text-xs ${colors[account.settings.type]}`}>
+        {settingsLabels[account.settings.type]}
+      </Badge>
+    );
   };
 
   const renderGroup = (group: AccountGroup) => {
@@ -914,6 +1198,7 @@ export default function Accounts() {
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-gray-500" />
                   <span>{account.name}</span>
+                  {getSettingsBadge(account)}
                 </div>
                 <div className="flex gap-1">
                   <Button
@@ -964,6 +1249,7 @@ export default function Accounts() {
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-gray-500" />
                 <span>{account.name}</span>
+                {getSettingsBadge(account)}
               </div>
               <div className="flex gap-1">
                 <Button
@@ -990,6 +1276,10 @@ export default function Accounts() {
 
   const getAvailableGroups = () => {
     return accountData.groups.filter((g) => g.type === selectedType);
+  };
+
+  const getAssetAccounts = () => {
+    return accountData.accounts.filter((a) => a.type === "asset");
   };
 
   return (
@@ -1121,7 +1411,7 @@ export default function Accounts() {
 
       {/* 계정 추가/수정 다이얼로그 */}
       <Dialog open={isAccountDialogOpen} onOpenChange={setIsAccountDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingAccount ? "계정 수정" : "계정 추가"}
@@ -1131,42 +1421,353 @@ export default function Accounts() {
               {editingAccount ? "수정" : "추가"}합니다.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="account-name">계정명</Label>
-              <Input
-                id="account-name"
-                value={accountFormData.name}
-                onChange={(e) =>
-                  setAccountFormData({
-                    ...accountFormData,
-                    name: e.target.value,
-                  })
-                }
-                placeholder="계정명을 입력하세요"
-              />
+          <div className="space-y-6">
+            {/* 기본 정보 */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="account-name">계정명</Label>
+                <Input
+                  id="account-name"
+                  value={accountFormData.name}
+                  onChange={(e) =>
+                    setAccountFormData({
+                      ...accountFormData,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="계정명을 입력하세요"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="account-group">소속 그룹 (선택사항)</Label>
+                <select
+                  id="account-group"
+                  value={accountFormData.groupId}
+                  onChange={(e) =>
+                    setAccountFormData({
+                      ...accountFormData,
+                      groupId: e.target.value,
+                    })
+                  }
+                  className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-600"
+                >
+                  <option value="">그룹 없음</option>
+                  {getAvailableGroups().map((group) => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="account-group">소속 그룹 (선택사항)</Label>
-              <select
-                id="account-group"
-                value={accountFormData.groupId}
-                onChange={(e) =>
-                  setAccountFormData({
-                    ...accountFormData,
-                    groupId: e.target.value,
-                  })
-                }
-                className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-600"
-              >
-                <option value="">그룹 없음</option>
-                {getAvailableGroups().map((group) => (
-                  <option key={group.id} value={group.id}>
-                    {group.name}
-                  </option>
+
+            {/* 계정 종류 선택 */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Label>계정 종류</Label>
+                <Info className="h-4 w-4 text-gray-400" />
+              </div>
+              <div className="grid gap-3">
+                {accountSettingsOptions[selectedType]?.map((option) => (
+                  <div
+                    key={option.value}
+                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                      accountSettings.type === option.value
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                    onClick={() =>
+                      setAccountSettings({
+                        ...accountSettings,
+                        type: option.value as AccountSettingType,
+                      })
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        checked={accountSettings.type === option.value}
+                        onChange={() =>
+                          setAccountSettings({
+                            ...accountSettings,
+                            type: option.value as AccountSettingType,
+                          })
+                        }
+                        className="text-blue-600"
+                      />
+                      <div>
+                        <div className="font-medium">{option.label}</div>
+                        <div className="text-sm text-gray-500">
+                          {option.description}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </select>
+              </div>
             </div>
+
+            {/* 신용카드 추가 설정 */}
+            {accountSettings.type === "credit_card" && (
+              <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <h4 className="font-medium text-red-800 dark:text-red-200">
+                  신용카드 설정
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="usage-start">사용기간 시작일</Label>
+                    <Input
+                      id="usage-start"
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={accountSettings.creditCard?.usageStartDay || ""}
+                      onChange={(e) =>
+                        setAccountSettings({
+                          ...accountSettings,
+                          creditCard: {
+                            usageStartDay:
+                              accountSettings.creditCard?.usageStartDay ?? 1,
+                            usageEndDay:
+                              accountSettings.creditCard?.usageEndDay ?? 31,
+                            paymentDay:
+                              accountSettings.creditCard?.paymentDay ?? 15,
+                            linkedAssetId:
+                              accountSettings.creditCard?.linkedAssetId ?? "",
+                            targetAmount:
+                              Number.parseInt(e.target.value) || undefined,
+                            installmentRounding:
+                              accountSettings.creditCard
+                                ?.installmentRounding === "truncate_1" ||
+                              accountSettings.creditCard
+                                ?.installmentRounding === "truncate_100"
+                                ? accountSettings.creditCard.installmentRounding
+                                : "truncate_1", // ✅ 타입 보장
+                          },
+                        })
+                      }
+                      placeholder="1"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="usage-end">사용기간 종료일</Label>
+                    <Input
+                      id="usage-end"
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={accountSettings.creditCard?.usageEndDay || ""}
+                      onChange={(e) =>
+                        setAccountSettings({
+                          ...accountSettings,
+                          creditCard: {
+                            usageStartDay:
+                              accountSettings.creditCard?.usageStartDay ?? 1,
+                            usageEndDay:
+                              accountSettings.creditCard?.usageEndDay ?? 31,
+                            paymentDay:
+                              accountSettings.creditCard?.paymentDay ?? 15,
+                            linkedAssetId:
+                              accountSettings.creditCard?.linkedAssetId ?? "",
+                            targetAmount:
+                              Number.parseInt(e.target.value) || undefined,
+                            installmentRounding:
+                              accountSettings.creditCard
+                                ?.installmentRounding === "truncate_1" ||
+                              accountSettings.creditCard
+                                ?.installmentRounding === "truncate_100"
+                                ? accountSettings.creditCard.installmentRounding
+                                : "truncate_1", // ✅ 타입 보장
+                          },
+                        })
+                      }
+                      placeholder="31"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="payment-day">결제일</Label>
+                  <Input
+                    id="payment-day"
+                    type="number"
+                    min="1"
+                    max="31"
+                    value={accountSettings.creditCard?.paymentDay || ""}
+                    onChange={(e) =>
+                      setAccountSettings({
+                        ...accountSettings,
+                        creditCard: {
+                          usageStartDay:
+                            accountSettings.creditCard?.usageStartDay ?? 1,
+                          usageEndDay:
+                            accountSettings.creditCard?.usageEndDay ?? 31,
+                          paymentDay:
+                            accountSettings.creditCard?.paymentDay ?? 15,
+                          linkedAssetId:
+                            accountSettings.creditCard?.linkedAssetId ?? "",
+                          targetAmount:
+                            Number.parseInt(e.target.value) || undefined,
+                          installmentRounding:
+                            accountSettings.creditCard?.installmentRounding ===
+                              "truncate_1" ||
+                            accountSettings.creditCard?.installmentRounding ===
+                              "truncate_100"
+                              ? accountSettings.creditCard.installmentRounding
+                              : "truncate_1", // ✅ 타입 보장
+                        },
+                      })
+                    }
+                    placeholder="15"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="linked-asset">대금결제항목</Label>
+                  <select
+                    id="linked-asset"
+                    value={accountSettings.creditCard?.linkedAssetId || ""}
+                    onChange={(e) =>
+                      setAccountSettings({
+                        ...accountSettings,
+                        creditCard: {
+                          usageStartDay:
+                            accountSettings.creditCard?.usageStartDay ?? 1,
+                          usageEndDay:
+                            accountSettings.creditCard?.usageEndDay ?? 31,
+                          paymentDay:
+                            accountSettings.creditCard?.paymentDay ?? 15,
+                          linkedAssetId:
+                            accountSettings.creditCard?.linkedAssetId ?? "",
+                          targetAmount:
+                            Number.parseInt(e.target.value) || undefined,
+                          installmentRounding:
+                            accountSettings.creditCard?.installmentRounding ===
+                              "truncate_1" ||
+                            accountSettings.creditCard?.installmentRounding ===
+                              "truncate_100"
+                              ? accountSettings.creditCard.installmentRounding
+                              : "truncate_1", // ✅ 타입 보장
+                        },
+                      })
+                    }
+                    className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-600"
+                  >
+                    <option value="">자산 계정 선택</option>
+                    {getAssetAccounts().map((asset) => (
+                      <option key={asset.id} value={asset.id}>
+                        {asset.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="target-amount">
+                    목표 사용금액 (선택사항)
+                  </Label>
+                  <Input
+                    id="target-amount"
+                    type="number"
+                    value={accountSettings.creditCard?.targetAmount || ""}
+                    onChange={(e) =>
+                      setAccountSettings({
+                        ...accountSettings,
+                        creditCard: {
+                          usageStartDay:
+                            accountSettings.creditCard?.usageStartDay ?? 1,
+                          usageEndDay:
+                            accountSettings.creditCard?.usageEndDay ?? 31,
+                          paymentDay:
+                            accountSettings.creditCard?.paymentDay ?? 15,
+                          linkedAssetId:
+                            accountSettings.creditCard?.linkedAssetId ?? "",
+                          targetAmount:
+                            Number.parseInt(e.target.value) || undefined,
+                          installmentRounding:
+                            accountSettings.creditCard?.installmentRounding ===
+                              "truncate_1" ||
+                            accountSettings.creditCard?.installmentRounding ===
+                              "truncate_100"
+                              ? accountSettings.creditCard.installmentRounding
+                              : "truncate_1", // ✅ 타입 보장
+                        },
+                      })
+                    }
+                    placeholder="월 목표 사용금액"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="installment-rounding">
+                    할부입력시 처리방식
+                  </Label>
+                  <select
+                    id="installment-rounding"
+                    value={
+                      accountSettings.creditCard?.installmentRounding ||
+                      "truncate_1"
+                    }
+                    onChange={(e) =>
+                      setAccountSettings({
+                        ...accountSettings,
+                        creditCard: {
+                          ...accountSettings.creditCard,
+                          usageStartDay:
+                            accountSettings.creditCard?.usageStartDay || 1,
+                          usageEndDay:
+                            accountSettings.creditCard?.usageEndDay || 31,
+                          paymentDay:
+                            accountSettings.creditCard?.paymentDay || 15,
+                          linkedAssetId:
+                            accountSettings.creditCard?.linkedAssetId || "",
+                          installmentRounding: e.target.value as
+                            | "truncate_1"
+                            | "truncate_100",
+                        },
+                      })
+                    }
+                    className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-600"
+                  >
+                    <option value="truncate_1">
+                      1원 미만 절삭 (국민, 농협, 비씨, 우리, 하나)
+                    </option>
+                    <option value="truncate_100">
+                      100원 미만 절삭 (롯데, 삼성, 신한, 현대)
+                    </option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* 직불카드 추가 설정 */}
+            {accountSettings.type === "debit_card" && (
+              <div className="space-y-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <h4 className="font-medium text-green-800 dark:text-green-200">
+                  직불카드 설정
+                </h4>
+                <div className="space-y-2">
+                  <Label htmlFor="debit-linked-asset">연결된 자산 계정</Label>
+                  <select
+                    id="debit-linked-asset"
+                    value={accountSettings.debitCard?.linkedAssetId || ""}
+                    onChange={(e) =>
+                      setAccountSettings({
+                        ...accountSettings,
+                        debitCard: {
+                          linkedAssetId: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-600"
+                  >
+                    <option value="">자산 계정 선택</option>
+                    {getAssetAccounts().map((asset) => (
+                      <option key={asset.id} value={asset.id}>
+                        {asset.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button
