@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import type { Transaction } from "@/types/transaction";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,60 +23,17 @@ import {
   DollarSign,
   Calendar,
   Check,
-  Clock,
-  ArrowLeftRight,
-  Trash2,
-  Edit2,
 } from "lucide-react";
-// RotateCcw,
-import type { Transaction } from "@/types/transaction";
-import type { LucideIcon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import {
-  getTransactionColor,
-  getTransactionIcon,
-} from "@/lib/transactionHelpers";
 
-export interface TransactionType {
-  id: string;
-  name: string;
-  icon: LucideIcon;
-  color: string;
-  description: string;
-  example: string;
-  debit: string;
-  credit: string;
-  category: "지출" | "수익" | "자산 이동";
-}
+import type {
+  Account,
+  AccountData,
+  AccountType,
+  TransactionType,
+} from "@/components/ui/wizard/transaction-wizard";
 
-export interface Account {
-  id: string;
-  name: string;
-  groupId?: string;
-  type: AccountType;
-  groupName?: string;
-}
-
-export interface AccountGroup {
-  id: string;
-  name: string;
-  type: AccountType;
-}
-
-export interface AccountData {
-  groups: AccountGroup[];
-  accounts: Account[];
-}
-
-export type AccountType =
-  | "asset"
-  | "liability"
-  | "equity"
-  | "revenue"
-  | "expense";
-
-interface TransactionWizardProps {
-  onSave: (transaction: Transaction) => void;
+interface EditTransactionWizardProps {
+  onUpdate: (transaction: Transaction) => void;
   presetType?: string;
 }
 
@@ -137,34 +96,45 @@ const mainTransactionTypes = [
   },
 ] as const satisfies TransactionType[];
 
-export const TransactionWizard = ({
-  onSave,
+export const EditTransactionWizard = ({
+  onUpdate,
   presetType,
-}: TransactionWizardProps) => {
+}: EditTransactionWizardProps) => {
   const navigate = useNavigate();
-
+  const { transactionId } = useParams();
   const [selectedType, setSelectedType] = useState<TransactionType | null>(
     null
   );
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState("");
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState<string | null>(null);
+  const [item, setItem] = useState("");
   const [debitAccount, setDebitAccount] = useState("");
   const [creditAccount, setCreditAccount] = useState("");
+  const [type, setType] = useState<Transaction["type"]>("expense");
   const [accountData, setAccountData] = useState<AccountData>({
     groups: [],
     accounts: [],
   });
+  const [transaction, setTransaction] = useState<Transaction | null>(null);
 
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>(
-    []
-  );
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [item, setItem] = useState("");
+  const getTypeFromCategory = (
+    category: string
+  ): "income" | "expense" | "transfer" => {
+    switch (category) {
+      case "수익":
+        return "income";
+      case "자산 이동":
+        return "transfer";
+      default:
+        return "expense";
+    }
+  };
 
   // 계정 데이터 로드
   useEffect(() => {
     loadAccountData();
+    loadTransaction();
   }, []);
 
   const loadAccountData = () => {
@@ -180,20 +150,124 @@ export const TransactionWizard = ({
     }
   };
 
-  // 최근 거래 내역 로드
-  useEffect(() => {
+  const loadTransaction = () => {
     try {
-      const savedTransactions = localStorage.getItem("transactions");
-      if (savedTransactions) {
-        const transactions = JSON.parse(savedTransactions);
-        // 최근 10개만 표시
-        setRecentTransactions(transactions.slice(-10).reverse());
-        setTransactions(transactions);
+      const saved = localStorage.getItem("transactions");
+      if (saved) {
+        const list: Transaction[] = JSON.parse(saved);
+        const target = list.find((t) => t.id === transactionId);
+        if (target) {
+          setTransaction(target);
+          setDate(target.date);
+          setItem(target.item);
+          setAmount(String(target.amount));
+          setMemo(target.description ?? "");
+          setDebitAccount(target.leftAccount);
+          setCreditAccount(target.rightAccount);
+
+          //   const type = mainTransactionTypes.find((type) => {
+          //     if (target.type === "income") return type.category === "수익";
+          //     if (target.type === "transfer")
+          //       return type.category === "자산 이동";
+          //     return type.category === "지출";
+          //   });
+          //   if (type) setSelectedType(type);
+          const type = mainTransactionTypes.find(
+            (type) => type.id === target.transactionTypeId
+          );
+          if (type) setSelectedType(type);
+        } else {
+          alert("해당 거래를 찾을 수 없습니다.");
+          navigate("/transactions");
+        }
       }
-    } catch (error) {
-      console.error("거래 내역 로딩 오류:", error);
+    } catch (err) {
+      console.error("거래 불러오기 오류", err);
     }
-  }, []);
+  };
+
+  const handleUpdate = () => {
+    if (!selectedType || !amount || !debitAccount || !creditAccount) {
+      alert("모든 필드를 입력해주세요.");
+      return;
+    }
+
+    if (!transaction) return;
+
+    const updatedTransaction: Transaction = {
+      ...transaction,
+      date,
+      item,
+      description: memo ?? "",
+      amount: Number(amount),
+      leftAccount: debitAccount,
+      rightAccount: creditAccount,
+      leftAccountName: getAccountName(debitAccount),
+      rightAccountName: getAccountName(creditAccount),
+      transactionTypeId: selectedType.id,
+      type: getTypeFromCategory(selectedType.category),
+    };
+
+    onUpdate(updatedTransaction);
+  };
+
+  const getAccountName = (accountId: string) => {
+    const account = accountData.accounts.find((acc) => acc.id === accountId);
+    return account ? account.name : accountId;
+  };
+
+  const getGroupName = (groupId: string) => {
+    const group = accountData.groups.find((g) => g.id === groupId);
+    return group ? group.name : "";
+  };
+
+  const getFilteredAccounts = (position: "debit" | "credit") => {
+    if (!selectedType) return [];
+
+    const debitType = selectedType.debit;
+    const creditType = selectedType.credit;
+    let targetAccountType: AccountType | null = null;
+
+    if (position === "debit") {
+      if (debitType === "비용") targetAccountType = "expense";
+      if (debitType === "자산+") targetAccountType = "asset";
+      if (debitType === "부채-") targetAccountType = "liability";
+    } else {
+      if (creditType === "자산-") targetAccountType = "asset";
+      if (creditType === "부채+") targetAccountType = "liability";
+      if (creditType === "수익") targetAccountType = "revenue";
+    }
+
+    return accountData.accounts
+      .filter((acc) => acc.type === targetAccountType)
+      .map((acc) => ({
+        ...acc,
+        groupName: acc.groupId ? getGroupName(acc.groupId) : "그룹 없음",
+      }))
+      .sort((a, b) => {
+        if (a.groupId && !b.groupId) return -1;
+        if (!a.groupId && b.groupId) return 1;
+        if (a.groupName !== b.groupName)
+          return a.groupName.localeCompare(b.groupName);
+        return a.name.localeCompare(b.name);
+      });
+  };
+
+  useEffect(() => {
+    // 거래 찾기
+    const savedTransactions = localStorage.getItem("transactions");
+    if (savedTransactions) {
+      const transactions = JSON.parse(savedTransactions);
+      const foundTransaction = transactions.find(
+        (t: Transaction) => t.id === transactionId
+      );
+      if (foundTransaction) {
+        setTransaction(foundTransaction);
+      } else {
+        navigate("/transactions");
+      }
+    }
+  }, [navigate, transactionId]);
 
   // presetType이 있으면 해당 타입으로 초기화
   useEffect(() => {
@@ -219,135 +293,22 @@ export const TransactionWizard = ({
 
   // 거래 유형 선택
   const handleTypeSelect = (type: TransactionType) => {
+    setType(getTypeFromCategory(type.category));
     setSelectedType(type);
     setMemo(null);
     setDebitAccount("");
     setCreditAccount("");
   };
 
-  // 거래 저장
-  const handleSave = () => {
-    if (!selectedType || !amount || !debitAccount || !creditAccount) {
-      alert("모든 정보를 입력해주세요.");
-      return;
-    }
-
-    const transaction: Transaction = {
-      id: "",
-      date,
-      item: item,
-      description: memo || "",
-      amount: Number(amount),
-      leftAccount: debitAccount,
-      rightAccount: creditAccount,
-      leftAccountName: getAccountName(debitAccount),
-      rightAccountName: getAccountName(creditAccount),
-      type:
-        selectedType.category === "수익"
-          ? "income"
-          : selectedType.category === "자산 이동"
-          ? "transfer"
-          : "expense",
-      transactionTypeId: selectedType.id,
-      accountType: "asset",
-      createdAt: "",
-    };
-
-    onSave(transaction);
-
-    // 최근 거래 내역 업데이트
-    const newTransaction = {
-      ...transaction,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-    };
-    setRecentTransactions((prev) => [newTransaction, ...prev.slice(0, 9)]);
-
-    if (!presetType) {
-      resetForm();
-    }
-  };
-
-  const handleDelete = (id: string, description?: string) => {
-    const label = description?.trim() ? `"${description}"` : "이 거래";
-    if (confirm(`${label}를 삭제하시겠습니까?`)) {
-      handleDeleteTransaction(id);
-    }
-  };
-  const handleDeleteTransaction = (id: string) => {
-    try {
-      const updatedTransactions = transactions.filter((t) => t.id !== id);
-      setTransactions(updatedTransactions);
-      setRecentTransactions(updatedTransactions.slice(-10).reverse()); // ✅ 추가
-      localStorage.setItem("transactions", JSON.stringify(updatedTransactions));
-    } catch (error) {
-      console.error("거래 삭제 중 오류 발생:", error);
-      alert("거래를 삭제하는 중 오류가 발생했습니다.");
-    }
-  };
-
-  const getAccountName = (accountId: string) => {
-    const account = accountData.accounts.find((acc) => acc.id === accountId);
-    return account ? account.name : accountId;
-  };
-
-  // 그룹명 조회
-  const getGroupName = (groupId: string) => {
-    const group = accountData.groups.find((g) => g.id === groupId);
-    return group ? group.name : "";
-  };
-
-  // 선택된 거래 유형에 따른 계정 필터링
-  const getFilteredAccounts = (position: "debit" | "credit") => {
-    if (!selectedType) return [];
-
-    const debitType = selectedType.debit;
-    const creditType = selectedType.credit;
-
-    let targetAccountType: AccountType | null = null;
-
-    if (position === "debit") {
-      if (debitType === "비용") targetAccountType = "expense";
-      if (debitType === "자산+") targetAccountType = "asset";
-      if (debitType === "부채-") targetAccountType = "liability";
-      if (debitType === "자본-") targetAccountType = "equity";
-    } else {
-      if (creditType === "자산-") targetAccountType = "asset";
-      if (creditType === "부채+") targetAccountType = "liability";
-      if (creditType === "수익") targetAccountType = "revenue";
-      if (creditType === "자본+") targetAccountType = "equity";
-    }
-
-    if (!targetAccountType) return [];
-
-    // 해당 타입의 계정들만 반환
-    const filteredAccounts = accountData.accounts
-      .filter((account) => account.type === targetAccountType)
-      .map((account) => ({
-        ...account,
-        groupName: account.groupId
-          ? getGroupName(account.groupId)
-          : "그룹 없음",
-      }))
-      .sort((a, b) => {
-        // 그룹별로 정렬, 그룹 없는 것들은 맨 아래
-        if (a.groupId && !b.groupId) return -1;
-        if (!a.groupId && b.groupId) return 1;
-        if (a.groupName !== b.groupName)
-          return a.groupName.localeCompare(b.groupName);
-        return a.name.localeCompare(b.name);
-      });
-
-    console.log(`${position} 계정 필터링 결과:`, filteredAccounts); // 디버깅용
-    return filteredAccounts;
-  };
-
+  if (!transaction) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className="space-y-6">
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>새 거래 입력</span>
+            <span>거래 수정</span>
             {selectedType && !presetType && (
               <Button variant="ghost" size="sm" onClick={resetForm}>
                 초기화
@@ -510,125 +471,13 @@ export const TransactionWizard = ({
             </div>
 
             <Button
-              onClick={handleSave}
+              onClick={handleUpdate}
               className="w-full bg-green-600 hover:bg-green-700 text-white"
               disabled={!amount || !debitAccount || !creditAccount || !item}
             >
-              <Check className="mr-2 h-4 w-4" /> 거래 저장
+              <Check className="mr-2 h-4 w-4" /> 거래 수정
             </Button>
           </>
-        </CardContent>
-      </Card>
-      {/* 최근 거래 내역 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            최근 거래 내역
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {recentTransactions.length === 0 ? (
-            <div className="text-center py-8">
-              <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">
-                아직 거래 내역이 없습니다
-              </p>
-              <p className="text-sm text-gray-400 dark:text-gray-500">
-                첫 거래를 입력해보세요
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {recentTransactions.map((transaction, index) => (
-                <div
-                  key={`${transaction.id}-${index}`}
-                  className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                      {getTransactionIcon(transaction.transactionTypeId || "")}
-                    </div>
-                    <div>
-                      <h4 className="text-sm text-gray-900 dark:text-white">
-                        <span className="font-bold">{transaction.item}</span>
-                        {transaction.description && (
-                          <span className="font-normal">
-                            {" "}
-                            - {transaction.description}
-                          </span>
-                        )}
-                      </h4>
-                      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                        <span>{transaction.leftAccountName}</span>
-                        <ArrowLeftRight className="h-3 w-3" />
-                        <span>{transaction.rightAccountName}</span>
-                      </div>
-                      <p className="text-xs text-gray-400 dark:text-gray-500">
-                        {new Date(transaction.date).toLocaleDateString("ko-KR")}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between md:justify-end gap-4">
-                    <div className="text-right">
-                      <p
-                        className={`font-bold text-lg ${getTransactionColor(
-                          transaction.type
-                        )}`}
-                      >
-                        {transaction.amount.toLocaleString()}원
-                      </p>
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${
-                          transaction.type === "income"
-                            ? "border-green-200 text-green-700 dark:border-green-800 dark:text-green-400"
-                            : transaction.type === "expense"
-                            ? "border-red-200 text-red-700 dark:border-red-800 dark:text-red-400"
-                            : "border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400"
-                        }`}
-                      >
-                        {transaction.type === "income"
-                          ? "수입"
-                          : transaction.type === "expense"
-                          ? "지출"
-                          : "이체"}
-                      </Badge>
-                    </div>
-
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          navigate(`/transaction/edit/${transaction.id}`, {
-                            state: { from: location.pathname },
-                          })
-                        }
-                        className="h-8 w-8 p-0"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          handleDelete(
-                            transaction.id,
-                            transaction.description ?? ""
-                          )
-                        }
-                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
