@@ -1,3 +1,4 @@
-export const isAuthenticated = (): boolean => {
-    return !!localStorage.getItem("userEmail"); // 예: 토큰 기반 인증
+export const isAuthenticated = () => {
+    const token = sessionStorage.getItem("accessToken");
+    return !!token;
 };
