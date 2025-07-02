@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox";
 
 import { FcGoogle } from "react-icons/fc";
 import { RiKakaoTalkFill } from "react-icons/ri";
@@ -13,7 +13,7 @@ import { useSignup } from "@/hook/useLogin";
 
 export default function Signup() {
     const navigate = useNavigate();
-    const { mutate: signup, isPending, isError } = useSignup();
+    const { mutate: signup, isPending: _isPending, isError: _isError } = useSignup();
 
     const [name, setName] = useState<string>("");
     const [email, setEmail] = useState<string>("");

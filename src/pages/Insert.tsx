@@ -1,12 +1,11 @@
-import type { Transaction } from "@/types/transaction";
 // import { useNavigate } from "react-router-dom";
 
-import { TransactionWizard } from "@/components/ui/wizard/transaction-wizard";
+import { TransactionWizard, type TransactionRequest } from "@/components/ui/wizard/transaction-wizard";
 
 export default function Insert() {
     // const navigate = useNavigate();
 
-    const handleSaveTransaction = (transaction: Transaction) => {
+    const handleSaveTransaction = (transaction: TransactionRequest) => {
         try {
             const savedTransactions = localStorage.getItem("transactions");
             let transactions = [];

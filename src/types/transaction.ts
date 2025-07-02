@@ -14,7 +14,7 @@ export const subtypeCode = {
 
 export type SubTypeCodeType = keyof typeof subtypeCode;
 
-type AccountType = "asset" | "liability" | "equity" | "revenue" | "expense";
+// type AccountType = "asset" | "liability" | "equity" | "revenue" | "expense";
 
 export interface Transaction {
     id: string;

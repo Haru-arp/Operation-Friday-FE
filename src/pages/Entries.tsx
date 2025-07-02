@@ -1,4 +1,4 @@
-import type { Transaction, TransactionApi } from "@/types/transaction";
+import type { TransactionApi } from "@/types/transaction";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ export default function Entries() {
         });
     };
 
-    const { data: Alltransactions, isLoading, isError } = useTransactions();
+    const { data: Alltransactions, isLoading, isError: _ } = useTransactions();
 
     // 필터링 및 검색
     const filteredTransactions = transactions.filter((transaction) => {
@@ -100,16 +100,16 @@ export default function Entries() {
         }
     };
 
-    const handleUpdateTransaction = (updatedTransaction: TransactionApi) => {
-        try {
-            const updatedTransactions = transactions.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t));
-            setTransactions(updatedTransactions);
-            localStorage.setItem("transactions", JSON.stringify(updatedTransactions));
-        } catch (error) {
-            console.error("거래 업데이트 중 오류 발생:", error);
-            alert("거래를 업데이트하는 중 오류가 발생했습니다.");
-        }
-    };
+    // const handleUpdateTransaction = (updatedTransaction: TransactionApi) => {
+    //     try {
+    //         const updatedTransactions = transactions.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t));
+    //         setTransactions(updatedTransactions);
+    //         localStorage.setItem("transactions", JSON.stringify(updatedTransactions));
+    //     } catch (error) {
+    //         console.error("거래 업데이트 중 오류 발생:", error);
+    //         alert("거래를 업데이트하는 중 오류가 발생했습니다.");
+    //     }
+    // };
 
     if (isLoading) {
         return (

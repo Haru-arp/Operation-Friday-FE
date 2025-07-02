@@ -1,4 +1,4 @@
-import type { Transaction, TransactionApi } from "@/types/transaction";
+import type { TransactionApi } from "@/types/transaction";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TrendingUp, TrendingDown, Wallet, Target, Calendar, BarChart3, ArrowLeftRight } from "lucide-react";
@@ -19,7 +19,7 @@ export default function Home() {
             select: (res) => res.data.data,
         });
     };
-    const { data: Alltransactions, isLoading, isError } = useTransactions();
+    const { data: Alltransactions, isLoading: _isLoading, isError: _isError } = useTransactions();
 
     const navigate = useNavigate();
 
