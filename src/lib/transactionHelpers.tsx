@@ -6,7 +6,15 @@ import {
     CreditCard,
     RefreshCw,
     HandCoins,
+    Building2,
+    PiggyBank,
+    Shuffle,
+    CircleDollarSign,
+    TrendingDown,
+    ArrowUpDown,
+    ArrowLeftRight,
 } from "lucide-react";
+
 import type { JSX } from "react";
 
 /** 거래 타입 (문자열 기반) */
@@ -119,3 +127,116 @@ export const getTransactionColor = (type: TransactionType): string => {
 //       return "text-gray-600";
 //   }
 // };
+export const transactionTypeMap = {
+    expense_cash: {
+        icon: Banknote,
+        color: "bg-red-500",
+        textColor: "text-red-600",
+        name: "현금 지출",
+        category: "지출",
+    },
+    expense_credit: {
+        icon: CreditCard,
+        color: "bg-orange-500",
+        textColor: "text-orange-600",
+        name: "외상 지출",
+        category: "지출",
+    },
+    income: {
+        icon: TrendingUp,
+        color: "bg-green-500",
+        textColor: "text-green-600",
+        name: "수익 발생",
+        category: "수익",
+    },
+    asset_transfer: {
+        icon: RefreshCw,
+        color: "bg-blue-500",
+        textColor: "text-blue-600",
+        name: "자산 이동",
+        category: "자산 이동",
+    },
+    debt_repayment: {
+        icon: HandCoins,
+        color: "bg-purple-500",
+        textColor: "text-purple-600",
+        name: "부채 상환",
+        category: "지출",
+    },
+    debt_transfer: {
+        icon: Shuffle,
+        color: "bg-indigo-500",
+        textColor: "text-indigo-600",
+        name: "부채 이동",
+        category: "부채 이동",
+    },
+    initial_asset: {
+        icon: PiggyBank,
+        color: "bg-emerald-500",
+        textColor: "text-emerald-600",
+        name: "기초자산 설정",
+        category: "초기 세팅",
+    },
+    initial_liability: {
+        icon: Building2,
+        color: "bg-rose-500",
+        textColor: "text-rose-600",
+        name: "기초부채 설정",
+        category: "초기 세팅",
+    },
+    loan: {
+        icon: CircleDollarSign,
+        color: "bg-cyan-500",
+        textColor: "text-cyan-600",
+        name: "차입",
+        category: "차입",
+    },
+    capital_withdraw: {
+        icon: TrendingDown,
+        color: "bg-gray-500",
+        textColor: "text-gray-600",
+        name: "자본 인출",
+        category: "자본 회수",
+    },
+    capital_realloc: {
+        icon: ArrowUpDown,
+        color: "bg-violet-500",
+        textColor: "text-violet-600",
+        name: "자본 재분류",
+        category: "자본 이동",
+    },
+};
+
+// 기존 타입을 새로운 타입으로 매핑 (하위 호환성)
+export const legacyTypeMapping = {
+    income: "income",
+    expense: "expense_cash", // 기본 지출은 현금 지출로
+    transfer: "asset_transfer",
+};
+
+export const getTransactionIconInfo = (transactionType: string, detailedType?: string) => {
+    // 상세 타입이 있으면 우선 사용
+    if (detailedType && transactionTypeMap[detailedType as keyof typeof transactionTypeMap]) {
+        return transactionTypeMap[detailedType as keyof typeof transactionTypeMap];
+    }
+
+    // 기존 타입을 새로운 타입으로 매핑
+    const mappedType = legacyTypeMapping[transactionType as keyof typeof legacyTypeMapping];
+    if (mappedType && transactionTypeMap[mappedType as keyof typeof transactionTypeMap]) {
+        return transactionTypeMap[mappedType as keyof typeof transactionTypeMap];
+    }
+
+    // 직접 매핑
+    if (transactionTypeMap[transactionType as keyof typeof transactionTypeMap]) {
+        return transactionTypeMap[transactionType as keyof typeof transactionTypeMap];
+    }
+
+    // 기본값
+    return {
+        icon: ArrowLeftRight,
+        color: "bg-gray-500",
+        textColor: "text-gray-600",
+        name: "기타",
+        category: "기타",
+    };
+};

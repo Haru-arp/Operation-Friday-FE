@@ -17,6 +17,6 @@ export const login = async (form: LoginForm) => {
 };
 
 export const signup = async (form: SignupForm) => {
-    const response = await axiosInstance.post("/api/v1/users", form);
+    const response = await axiosInstance.post("/api/v1/users/signup", form);
     return response.data;
 };

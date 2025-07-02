@@ -1,4 +1,4 @@
-import type { Transaction } from "@/types/transaction";
+import type { Transaction, TransactionApi } from "@/types/transaction";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ export default function Entries() {
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [currentPage, setCurrentPage] = useState(1);
     const [_isLoading, setIsLoading] = useState(true);
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [transactions, setTransactions] = useState<TransactionApi[]>([]);
     const itemsPerPage = 10;
 
     const useTransactions = () => {
@@ -31,16 +31,15 @@ export default function Entries() {
     };
 
     const { data: Alltransactions, isLoading, isError } = useTransactions();
-    console.log("AllTrana", Alltransactions);
 
     // 필터링 및 검색
     const filteredTransactions = transactions.filter((transaction) => {
         const matchesSearch =
             transaction.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            transaction.leftAccountName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            transaction.rightAccountName?.toLowerCase().includes(searchTerm.toLowerCase());
+            transaction.debitItemName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            transaction.creditItemName?.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesFilter = filterType === "all" || transaction.type === filterType;
+        const matchesFilter = filterType === "all" || transaction.categoryType === filterType;
 
         return matchesSearch && matchesFilter;
     });
@@ -51,7 +50,7 @@ export default function Entries() {
 
         switch (sortBy) {
             case "date":
-                comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+                comparison = new Date(a.transDate).getTime() - new Date(b.transDate).getTime();
                 break;
             case "amount":
                 comparison = a.amount - b.amount;
@@ -69,7 +68,7 @@ export default function Entries() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedTransactions = sortedTransactions.slice(startIndex, startIndex + itemsPerPage);
 
-    const handleDelete = (id: string, description?: string) => {
+    const handleDelete = (id: number, description?: string) => {
         const label = description?.trim() ? `"${description}"` : "이 거래";
         if (confirm(`${label}를 삭제하시겠습니까?`)) {
             handleDeleteTransaction(id);
@@ -90,7 +89,7 @@ export default function Entries() {
         }
     }, [navigate, Alltransactions]);
 
-    const handleDeleteTransaction = (id: string) => {
+    const handleDeleteTransaction = (id: number) => {
         try {
             const updatedTransactions = transactions.filter((t) => t.id !== id);
             setTransactions(updatedTransactions);
@@ -101,18 +100,24 @@ export default function Entries() {
         }
     };
 
-    //   const handleUpdateTransaction = (updatedTransaction: Transaction) => {
-    //     try {
-    //       const updatedTransactions = transactions.map((t) =>
-    //         t.id === updatedTransaction.id ? updatedTransaction : t
-    //       );
-    //       setTransactions(updatedTransactions);
-    //       localStorage.setItem("transactions", JSON.stringify(updatedTransactions));
-    //     } catch (error) {
-    //       console.error("거래 업데이트 중 오류 발생:", error);
-    //       alert("거래를 업데이트하는 중 오류가 발생했습니다.");
-    //     }
-    //   };
+    const handleUpdateTransaction = (updatedTransaction: TransactionApi) => {
+        try {
+            const updatedTransactions = transactions.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t));
+            setTransactions(updatedTransactions);
+            localStorage.setItem("transactions", JSON.stringify(updatedTransactions));
+        } catch (error) {
+            console.error("거래 업데이트 중 오류 발생:", error);
+            alert("거래를 업데이트하는 중 오류가 발생했습니다.");
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="md:p-8 space-y-6">
@@ -146,9 +151,9 @@ export default function Entries() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">전체</SelectItem>
-                                <SelectItem value="income">수입</SelectItem>
-                                <SelectItem value="expense">지출</SelectItem>
-                                <SelectItem value="transfer">이체</SelectItem>
+                                <SelectItem value="INCOME">수입</SelectItem>
+                                <SelectItem value="EXPENSE">지출</SelectItem>
+                                <SelectItem value="TRNASFER">이체</SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -225,18 +230,18 @@ export default function Entries() {
 
                                     <div className="flex items-center justify-between md:justify-end gap-4">
                                         <div className="text-right">
-                                            <p className={`font-bold text-lg ${getTransactionColor(transaction.type)}`}>{transaction.amount.toLocaleString()}원</p>
+                                            <p className={`font-bold text-lg ${getTransactionColor(transaction.categoryType)}`}>{transaction.amount.toLocaleString()}원</p>
                                             <Badge
                                                 variant="outline"
                                                 className={`text-xs ${
-                                                    transaction.type === "income"
+                                                    transaction.categoryType === "income"
                                                         ? "border-green-200 text-green-700 dark:border-green-800 dark:text-green-400"
-                                                        : transaction.type === "expense"
+                                                        : transaction.categoryType === "expense"
                                                         ? "border-red-200 text-red-700 dark:border-red-800 dark:text-red-400"
                                                         : "border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400"
                                                 }`}
                                             >
-                                                {transaction.type === "income" ? "수입" : transaction.type === "expense" ? "지출" : "이체"}
+                                                {transaction.categoryType === "income" ? "수입" : transaction.categoryType === "expense" ? "지출" : "이체"}
                                             </Badge>
                                         </div>
 
