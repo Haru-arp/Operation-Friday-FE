@@ -59,12 +59,14 @@ pipeline {
         always {
             // 빌드 성공/실패와 관계없이 항상 Docker 로그아웃
             sh "docker logout"
-            // 배포 실패 시 메시지 출력
-            failure {
-                echo "Frontend deployment failed! Check Jenkins logs and Kubernetes Pods."
-            }
-            success {
-                echo "Frontend deployment successful!"
+
+            // 빌드가 실패했을 때만 이 메시지를 출력합니다.
+            script {
+                if (currentBuild.result == 'FAILURE') {
+                    echo "Frontend deployment failed! Check Jenkins logs and Kubernetes Pods."
+                } else {
+                    echo "Frontend deployment successful!"
+                }
             }
         }
     }
