@@ -34,7 +34,7 @@ pipeline {
         stage('Push Docker Image to Docker Hub') {
             steps {
                 // Docker Hub 로그인 Credential (Jenkins에서 추가한 ID와 동일해야 함)
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                     script {
                         sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
                         sh "docker push ${DOCKER_IMAGE}:${IMAGE_TAG}"
