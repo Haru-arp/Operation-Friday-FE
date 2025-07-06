@@ -1,6 +1,6 @@
 import axios from "axios";
 const axiosInstance = axios.create({
-    baseURL: "http://219.241.3.105:30080",
+    baseURL: "https://friday.ai.kr",
 });
 
 axiosInstance.interceptors.request.use((config) => {
