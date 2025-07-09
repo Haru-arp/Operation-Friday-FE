@@ -8,3 +8,8 @@ export const loadTransactions = async () => {
     const response = await axiosInstance.get("/api/v1/transactions");
     return response;
 };
+
+export const loadTransactionsById = async (id: number) => {
+    const response = await axiosInstance.get(`/api/v1/transactions/${id}`);
+    return response;
+};

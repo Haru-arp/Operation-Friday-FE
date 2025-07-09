@@ -32,21 +32,25 @@ export interface Transaction {
     transactionTypeId?: string;
 }
 
-export interface TransactionApi {
-    amount: number;
-    categoryType: "income" | "expense" | "transfer"; //Enum으로 묶기
-    createdAt: string;
-    creditItemId: number; //오른쪽
-    creditItemName: string;
-    debitItemId: number; //왼쪽
-    debitItemName: string;
-    description: string;
+export interface TransactionDetailApi {
     id: number;
-    memo: string;
-    subtypeCode: SubTypeCodeType; // Enum
-    subtypeName: string;
+    subtypeCode: SubTypeCodeType;
     transDate: string;
+    description: string;
+    debitItemId: number;
+    creditItemId: number;
+    amount: number;
+    memo: number;
+    createdAt: string;
     updatedAt: string;
+}
+export interface TransactionApi extends TransactionDetailApi {
+    // creditItemId: number; //오른쪽
+    // debitItemId: number; //왼쪽
+    categoryType: "income" | "expense" | "transfer"; //Enum으로 묶기
+    creditItemName: string;
+    debitItemName: string;
+    subtypeName: string;
 }
 
 // ASSET_TRANSFER

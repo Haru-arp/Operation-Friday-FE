@@ -48,7 +48,7 @@ export default function Signup() {
                 {
                     onSuccess: (res) => {
                         console.log("회원가입 성공", res);
-                        navigate("/");
+                        navigate("/"); //lgoin으로 보낼지, root로 보낼지 고민
                     },
                     onError: (err) => {
                         console.log("회원가입 실패", err);

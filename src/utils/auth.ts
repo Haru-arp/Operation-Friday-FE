@@ -1,4 +1,4 @@
-export const isAuthenticated = () => {
-    const token = sessionStorage.getItem("accessToken");
-    return !!token;
+export const isAuthenticated = (): boolean => {
+    const match = document.cookie.match(/(?:^|; )accessToken=([^;]*)/);
+    return !!match;
 };
