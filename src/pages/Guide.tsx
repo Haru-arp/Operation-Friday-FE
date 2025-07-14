@@ -395,49 +395,34 @@ export default function Guide() {
     const [selectedCategory, setSelectedCategory] = useState("transaction");
     const [selectedType, setSelectedType] = useState<keyof typeof transactionGuides>("cashExpense");
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("ko-KR", {
+    const formatCurrency = (amount: number) =>
+        new Intl.NumberFormat("ko-KR", {
             style: "currency",
             currency: "KRW",
         }).format(amount);
-    };
 
     const filteredGuides = Object.entries(transactionGuides).filter(([_, guide]) => {
-        if (selectedCategory === "transaction") {
-            return guide.category === "거래 입력";
-        } else {
-            return guide.category === "기초 설정";
-        }
+        return selectedCategory === "transaction" ? guide.category === "거래 입력" : guide.category === "기초 설정";
     });
 
     useEffect(() => {
-        if (selectedCategory === "setup") {
-            setSelectedType("initialAsset");
-        } else {
-            // fallback: transaction이면 첫 번째 항목 선택
-            const firstGuide = Object.entries(transactionGuides).find(([_, guide]) => guide.category === "거래 입력");
-            if (firstGuide) {
-                setSelectedType(firstGuide[0] as keyof typeof transactionGuides);
-            }
-        }
+        setSelectedType(selectedCategory === "setup" ? "initialAsset" : (Object.entries(transactionGuides).find(([_, g]) => g.category === "거래 입력")?.[0] as keyof typeof transactionGuides));
     }, [selectedCategory]);
 
     return (
-        <div className="p-6 space-y-6 bg-white dark:bg-gray-900 min-h-screen">
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">복식부기 분개 가이드</h1>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">11가지 거래 유형별 정확한 분개 방법을 학습하세요</p>
+        <div className="flex flex-col max-w-6xl container px-4 sm:px-6 lg:px-8 mx-auto space-y-6 py-6 bg-white dark:bg-gray-900 min-h-screen">
+            <div className="w-full">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">복식부기 분개 가이드</h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm sm:text-base">11가지 거래 유형별 정확한 분개 방법을 학습하세요</p>
             </div>
 
             {/* 카테고리 선택 */}
-            <div className="flex gap-4 mb-6">
+            <div className="flex flex-wrap gap-4 mb-6">
                 {categories.map((category) => (
                     <button
                         key={category.id}
-                        onClick={() => {
-                            setSelectedCategory(category.id); // 이것만
-                        }}
-                        className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                        onClick={() => setSelectedCategory(category.id)}
+                        className={`flex-1 min-w-[140px] sm:min-w-[180px] px-4 py-3 rounded-lg font-medium transition-colors ${
                             selectedCategory === category.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                         }`}
                     >
@@ -450,7 +435,7 @@ export default function Guide() {
             </div>
 
             <Tabs value={selectedType} onValueChange={(value) => setSelectedType(value as keyof typeof transactionGuides)}>
-                <TabsList className="h-full flex flex-wrap justify-center bg-gray-100 dark:bg-gray-800 p-1">
+                <TabsList className="w-full h-full gap-2 p-1 bg-gray-100 dark:bg-gray-800 grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))" }}>
                     {filteredGuides.map(([key, guide]) => {
                         const Icon = guide.icon;
                         return (
@@ -470,7 +455,7 @@ export default function Guide() {
 
                 {filteredGuides.map(([key, guide]) => (
                     <TabsContent key={key} value={key} className="mt-6">
-                        <Card className="border-gray-200 dark:border-gray-700 dark:bg-gray-800">
+                        <Card className="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-800">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-white">
                                     <div className={`w-12 h-12 ${guide.color} rounded-lg flex items-center justify-center`}>
@@ -486,10 +471,10 @@ export default function Guide() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="space-y-6">
+                                <div className="space-y-6 w-full">
                                     {guide.examples.map((example, index) => (
-                                        <div key={index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                            <div className="flex items-start justify-between mb-4">
+                                        <div key={index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 md:p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-4">
                                                 <div>
                                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{example.name}</h3>
                                                     <p className="text-sm text-gray-500 dark:text-gray-400">{example.description}</p>
@@ -510,7 +495,8 @@ export default function Guide() {
                                                     <Calculator className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                                                     <span className="font-medium text-gray-900 dark:text-white">분개 구조</span>
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {/* 차변 */}
                                                     <div className="text-center">
                                                         <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">차변 (DR)</div>
                                                         <div className="bg-white dark:bg-gray-700 p-4 rounded-lg border-2 border-blue-200 dark:border-blue-700">
@@ -523,6 +509,8 @@ export default function Guide() {
                                                             <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">{formatCurrency(example.amount)}</div>
                                                         </div>
                                                     </div>
+
+                                                    {/* 대변 */}
                                                     <div className="text-center">
                                                         <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">대변 (CR)</div>
                                                         <div className="bg-white dark:bg-gray-700 p-4 rounded-lg border-2 border-green-200 dark:border-green-700">

@@ -11,11 +11,6 @@ export const setAccessTokenToCookie = (token: string) => {
     document.cookie = `accessToken=${encodeURIComponent(token)}; path=/; max-age=900; SameSite=Strict; Secure`;
 };
 
-// const handleRefreshFailure = (error: unknown) => {
-//     logoutClient();
-//     return Promise.reject(error);
-// };
-
 const axiosInstance = axios.create({
     baseURL: "https://friday.ai.kr",
     withCredentials: true, // refreshToken 전송을 위해 필요
