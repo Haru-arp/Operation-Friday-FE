@@ -8,12 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Calendar, Check, Clock, ArrowLeftRight, Trash2, Edit2 } from "lucide-react";
 // RotateCcw, CreditCard, Banknote, TrendingUp, RefreshCw, HandCoins
-import type { TransactionApi } from "@/types/transaction";
+import type { Account, AccountType, CategoryEnum, TransactionApi } from "@/types/transaction";
 import type { LucideIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getTransactionColor, getTransactionIcon, transactionTypeMap } from "@/lib/transactionHelpers";
 import { useQuery } from "@tanstack/react-query";
-import { loadTransactions } from "@/api/transactions";
+import { loadAccount, loadTransactions } from "@/api/transactions";
+import { useAccountStore } from "@/stores/useAccountStore";
+import { getAccountData } from "@/utils/accountData";
 
 export type TransactionCategory = "지출" | "수익" | "자산 이동" | "초기 세팅" | "부채 이동" | "자본 회수" | "자본 이동" | "차입";
 
@@ -30,12 +32,13 @@ export interface TransactionType {
     category: TransactionCategory;
 }
 
-export interface Account {
+export interface Accounts {
     id: string;
     name: string;
-    groupId?: string;
     type: AccountType;
+    groupId?: string;
     groupName?: string;
+    category: CategoryEnum;
 }
 
 export interface AccountGroup {
@@ -46,7 +49,7 @@ export interface AccountGroup {
 
 export interface AccountData {
     groups: AccountGroup[];
-    accounts: Account[];
+    accounts: Accounts[];
 }
 
 export interface TransactionRequest {
@@ -58,8 +61,6 @@ export interface TransactionRequest {
     amount: number;
     memo: string;
 }
-
-export type AccountType = "asset" | "liability" | "equity" | "revenue" | "expense";
 
 interface TransactionWizardProps {
     onSave: (transaction: TransactionRequest) => void;
@@ -155,6 +156,15 @@ function getCreditType(id: string): string {
 
 export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps) => {
     const navigate = useNavigate();
+
+    const useLoadAccounts = () => {
+        return useQuery({
+            queryKey: ["accounts"],
+            queryFn: loadAccount,
+            select: (res) => res.data.data,
+        });
+    };
+
     const useTransactions = () => {
         return useQuery({
             queryKey: ["transactions"],
@@ -163,6 +173,7 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
         });
     };
     const { data: Alltransactions, isLoading: _isLoading, isError: _isError } = useTransactions();
+    const { data: accounts, isLoading: _isAccountsLoading, isError: _isAccountsError } = useLoadAccounts();
     const [selectedType, setSelectedType] = useState<TransactionType | null>(null);
     const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
     const [amount, setAmount] = useState("");
@@ -173,22 +184,20 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
         groups: [],
         accounts: [],
     });
-
     const [recentTransactions, setRecentTransactions] = useState<TransactionApi[]>([]);
     const [transactions, setTransactions] = useState<TransactionApi[]>([]);
     const [item, setItem] = useState("");
     // 계정 데이터 로드
     useEffect(() => {
         loadAccountData();
-    }, []);
+    }, [accounts]);
 
     const loadAccountData = () => {
         try {
-            const saved = localStorage.getItem("accountData");
-            if (saved) {
-                const data = JSON.parse(saved);
-                setAccountData(data);
-                console.log("로드된 계정 데이터:", data); // 디버깅용
+            if (accounts) {
+                const transAccountData = getAccountData(accounts);
+
+                setAccountData(transAccountData);
             }
         } catch (error) {
             console.error("계정 데이터 로딩 오류:", error);
@@ -198,9 +207,7 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
     // 최근 거래 내역 로드
     useEffect(() => {
         try {
-            // const savedTransactions = localStorage.getItem("transactions");
             if (Alltransactions) {
-                // const transactions = JSON.parse(savedTransactions);
                 // 최근 10개만 표시
                 setTransactions(Alltransactions);
                 setRecentTransactions(Alltransactions.slice(-10).reverse());
@@ -318,15 +325,15 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
         let targetAccountType: AccountType | null = null;
 
         if (position === "debit") {
-            if (debitType === "비용") targetAccountType = "expense";
-            if (debitType === "자산+") targetAccountType = "asset";
-            if (debitType === "부채-") targetAccountType = "liability";
-            if (debitType === "자본-") targetAccountType = "equity";
+            if (debitType === "비용") targetAccountType = "EXPENSE";
+            if (debitType === "자산+") targetAccountType = "ASSET";
+            if (debitType === "부채-") targetAccountType = "LIABILITY";
+            if (debitType === "자본-") targetAccountType = "EQUITY";
         } else {
-            if (creditType === "자산-") targetAccountType = "asset";
-            if (creditType === "부채+") targetAccountType = "liability";
-            if (creditType === "수익") targetAccountType = "revenue";
-            if (creditType === "자본+") targetAccountType = "equity";
+            if (creditType === "자산-") targetAccountType = "ASSET";
+            if (creditType === "부채+") targetAccountType = "LIABILITY";
+            if (creditType === "수익") targetAccountType = "REVENUE";
+            if (creditType === "자본+") targetAccountType = "EQUITY";
         }
 
         if (!targetAccountType) return [];
@@ -431,7 +438,7 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
                                         <SelectValue placeholder="차변 계정 선택" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {getFilteredAccounts("debit").map((account: Account) => (
+                                        {getFilteredAccounts("debit").map((account: Accounts) => (
                                             <SelectItem key={account.id} value={account.id}>
                                                 <div className="flex items-center">
                                                     <span className="text-xs text-gray-500 mr-2">[{account.groupName}]</span>
@@ -456,7 +463,7 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
                                         <SelectValue placeholder="대변 계정 선택" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {getFilteredAccounts("credit").map((account: Account) => (
+                                        {getFilteredAccounts("credit").map((account: Accounts) => (
                                             <SelectItem key={account.id} value={account.id}>
                                                 <div className="flex items-center">
                                                     <span className="text-xs text-gray-500 mr-2">[{account.groupName}]</span>

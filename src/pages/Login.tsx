@@ -13,20 +13,19 @@ import { useLogin } from "@/hook/useLogin";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+
 export default function LoginPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { mutate: login, isPending, isError: _ } = useLogin();
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
-    // const [isLoading, setIsLoading] = useState<boolean>(false);
-
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
         login(
             { email, password },
             {
-                onSuccess: (res) => {
+                onSuccess: async (res) => {
                     const accessToken = res.data?.accessToken;
 
                     if (accessToken) {
@@ -34,6 +33,7 @@ export default function LoginPage() {
                         // ✅ 사용자 정보 캐시 강제 새로고침 → useMe() 안에서 Zustand에 자동 저장
                         queryClient.invalidateQueries({ queryKey: ["me"] });
                         console.log("로그인 성공", res);
+
                         navigate("/");
                     } else {
                         console.warn("❗️ accessToken이 응답에 없습니다");
