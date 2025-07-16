@@ -8,13 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Calendar, Check, Clock, ArrowLeftRight, Trash2, Edit2 } from "lucide-react";
 // RotateCcw, CreditCard, Banknote, TrendingUp, RefreshCw, HandCoins
-import type { Account, AccountType, CategoryEnum, TransactionApi } from "@/types/transaction";
+import type { AccountType, CategoryEnum, TransactionApi } from "@/types/transaction";
 import type { LucideIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getTransactionColor, getTransactionIcon, transactionTypeMap } from "@/lib/transactionHelpers";
 import { useQuery } from "@tanstack/react-query";
 import { loadAccount, loadTransactions } from "@/api/transactions";
-import { useAccountStore } from "@/stores/useAccountStore";
 import { getAccountData } from "@/utils/accountData";
 
 export type TransactionCategory = "지출" | "수익" | "자산 이동" | "초기 세팅" | "부채 이동" | "자본 회수" | "자본 이동" | "차입";
