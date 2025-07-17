@@ -6,15 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Calendar, Check, Clock, ArrowLeftRight, Trash2, Edit2 } from "lucide-react";
+import { Coins, Calendar, Check, Clock, ArrowLeftRight, Trash2, Edit2 } from "lucide-react";
 // RotateCcw, CreditCard, Banknote, TrendingUp, RefreshCw, HandCoins
 import type { AccountType, CategoryEnum, TransactionApi } from "@/types/transaction";
 import type { LucideIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getTransactionColor, getTransactionIcon, transactionTypeMap } from "@/lib/transactionHelpers";
 import { useQuery } from "@tanstack/react-query";
-import { loadAccount, loadTransactions } from "@/api/transactions";
+import { loadTransactions } from "@/api/transactions";
 import { getAccountData } from "@/utils/accountData";
+import { useLoadAccounts } from "@/hook/useAccountData";
 
 export type TransactionCategory = "지출" | "수익" | "자산 이동" | "초기 세팅" | "부채 이동" | "자본 회수" | "자본 이동" | "차입";
 
@@ -155,14 +156,6 @@ function getCreditType(id: string): string {
 
 export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps) => {
     const navigate = useNavigate();
-
-    const useLoadAccounts = () => {
-        return useQuery({
-            queryKey: ["accounts"],
-            queryFn: loadAccount,
-            select: (res) => res.data.data,
-        });
-    };
 
     const useTransactions = () => {
         return useQuery({
@@ -376,7 +369,7 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
                                 <Label htmlFor="amount">금액</Label>
                                 <div className="relative">
                                     <Input id="amount" type="number" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} className="pl-10" />
-                                    <DollarSign className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                                    <Coins className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                                     <span className="absolute right-3 top-2.5 text-sm text-gray-500">원</span>
                                 </div>
                             </div>
