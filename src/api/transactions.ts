@@ -1,3 +1,4 @@
+import type { TransactionRequest } from "@/components/ui/wizard/transaction-wizard";
 import axiosInstance from "./axios";
 
 // export const login = async (form: LoginForm) => {
@@ -16,5 +17,10 @@ export const loadTransactionsById = async (id: number) => {
 
 export const loadAccount = async () => {
     const response = await axiosInstance.get(`/api/v1/accounts`);
+    return response;
+};
+
+export const registTransactions = async (form: TransactionRequest) => {
+    const response = await axiosInstance.post(`api/v1/transactions`, form);
     return response;
 };

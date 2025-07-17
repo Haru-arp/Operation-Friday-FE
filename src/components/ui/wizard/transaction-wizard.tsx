@@ -209,7 +209,7 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
             if (Alltransactions) {
                 // 최근 10개만 표시
                 setTransactions(Alltransactions);
-                setRecentTransactions(Alltransactions.slice(-10).reverse());
+                setRecentTransactions(Alltransactions.slice(-10));
             }
         } catch (error) {
             console.error("거래 내역 로딩 오류:", error);
@@ -247,19 +247,12 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
     };
 
     // 거래 저장
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!selectedType || !amount || !debitAccount || !creditAccount) {
             alert("모든 정보를 입력해주세요.");
             return;
         }
-        //         "subtypeCode": "string",
-        // "transDate": "2025-07-02",
-        // "description": "string",
-        // "debitItemId": 0,
-        // "creditItemId": 0,
-        // "amount": 0,
-        // "memo": "string"
-        //transaction form만 보내면 됨
+
         const transaction: TransactionRequest = {
             transDate: date,
             description: item,
@@ -272,17 +265,9 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
 
         onSave(transaction);
 
-        // // 최근 거래 내역 업데이트
-        // const newTransaction = {
-        //     ...transaction,
-        //     id: Date.now().toString(),
-        //     createdAt: new Date().toISOString(),
-        // };
-        // setRecentTransactions((prev) => [newTransaction, ...prev.slice(0, 9)]);
-
-        // if (!presetType) {
-        //     resetForm();
-        // }
+        if (!presetType) {
+            resetForm();
+        }
     };
 
     const handleDelete = (id: number, description?: string) => {
