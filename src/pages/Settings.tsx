@@ -174,8 +174,8 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          <div className="flex justify-end">
-            <Button onClick={handleSave}>저장</Button>
+          <div className="flex justify-end ">
+            <Button className="cursor-pointer" onClick={handleSave}>저장</Button>
           </div>
           <Card>
             <CardHeader>
@@ -200,9 +200,6 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          <div className="flex justify-end">
-            <Button onClick={() => console.log('앱 설정 저장')}>저장</Button>
-          </div>
         </TabsContent>
 
         <TabsContent value="initial" className="space-y-6">
