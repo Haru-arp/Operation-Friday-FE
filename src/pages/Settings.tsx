@@ -28,7 +28,7 @@ export default function Settings() {
   const [mounted, setMounted] = useState<boolean>(false);
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
   const [selectedTransactionType, setSelectedTransactionType] = useState<string | null>(null);
-  const { mutate: modifyName, isPending, isError } = useModifyName();
+  const { mutate: modifyName, } = useModifyName();
 
   const handleSave = () => {
 
