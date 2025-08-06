@@ -2,6 +2,10 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./styles/tailwind.css";
+import { useThemeStore } from "./stores/useThemeStore";
+
+// 앱 시작 시 다크모드 초기화
+useThemeStore.getState().initializeDarkMode();
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
