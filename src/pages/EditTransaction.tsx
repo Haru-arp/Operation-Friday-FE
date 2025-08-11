@@ -34,7 +34,7 @@ export default function EditTransaction() {
         <ArrowLeft className="h-4 w-4 mr-2" />
         뒤로 가기
       </Button>
-      <EditTransactionWizard onUpdate={handleUpdateTransaction} isUpadateLoading={isPending} />
+      <EditTransactionWizard onUpdate={handleUpdateTransaction} isUpdateLoading={isPending} />
     </div>
   );
 }
