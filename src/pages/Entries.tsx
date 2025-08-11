@@ -14,7 +14,7 @@ import { loadTransactions } from "@/api/transactions";
 export default function Entries() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState("");
-    const [filterType, setFilterType] = useState<"all" | "income" | "expense" | "transfer">("all");
+    const [filterType, setFilterType] = useState<"ALL" | "INCOME" | "EXPENSE" | "TRANSFER">("ALL");
     const [sortBy, setSortBy] = useState<"date" | "amount" | "description">("date");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [currentPage, setCurrentPage] = useState(1);
@@ -39,7 +39,7 @@ export default function Entries() {
             transaction.debitItemName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             transaction.creditItemName?.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesFilter = filterType === "all" || transaction.categoryType === filterType;
+        const matchesFilter = filterType === "ALL" || transaction.categoryType === filterType;
 
         return matchesSearch && matchesFilter;
     });
@@ -145,7 +145,7 @@ export default function Entries() {
                         </div>
 
                         {/* 타입 필터 */}
-                        <Select value={filterType} onValueChange={(value: "all" | "income" | "expense" | "transfer") => setFilterType(value)}>
+                        <Select value={filterType} onValueChange={(value: "ALL" | "INCOME" | "EXPENSE" | "TRANSFER") => setFilterType(value)}>
                             <SelectTrigger>
                                 <SelectValue placeholder="거래 유형" />
                             </SelectTrigger>
@@ -190,9 +190,9 @@ export default function Entries() {
                     {paginatedTransactions.length === 0 ? (
                         <div className="text-center py-12">
                             <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{searchTerm || filterType !== "all" ? "검색 결과가 없습니다" : "거래 내역이 없습니다"}</h3>
-                            <p className="text-gray-500 dark:text-gray-400 mb-4">{searchTerm || filterType !== "all" ? "다른 검색어나 필터를 시도해보세요" : "첫 거래를 추가해보세요"}</p>
-                            {!searchTerm && filterType === "all" && (
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{searchTerm || filterType !== "ALL" ? "검색 결과가 없습니다" : "거래 내역이 없습니다"}</h3>
+                            <p className="text-gray-500 dark:text-gray-400 mb-4">{searchTerm || filterType !== "ALL" ? "다른 검색어나 필터를 시도해보세요" : "첫 거래를 추가해보세요"}</p>
+                            {!searchTerm && filterType === "ALL" && (
                                 <Button onClick={() => navigate("/transaction/new")} className="bg-black hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100">
                                     <Plus className="h-4 w-4 mr-2" />
                                     거래 추가하기
@@ -233,15 +233,14 @@ export default function Entries() {
                                             <p className={`font-bold text-lg ${getTransactionColor(transaction.categoryType)}`}>{transaction.amount.toLocaleString()}원</p>
                                             <Badge
                                                 variant="outline"
-                                                className={`text-xs ${
-                                                    transaction.categoryType === "income"
-                                                        ? "border-green-200 text-green-700 dark:border-green-800 dark:text-green-400"
-                                                        : transaction.categoryType === "expense"
+                                                className={`text-xs ${transaction.categoryType === "INCOME"
+                                                    ? "border-green-200 text-green-700 dark:border-green-800 dark:text-green-400"
+                                                    : transaction.categoryType === "EXPENSE"
                                                         ? "border-red-200 text-red-700 dark:border-red-800 dark:text-red-400"
                                                         : "border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400"
-                                                }`}
+                                                    }`}
                                             >
-                                                {transaction.categoryType === "income" ? "수입" : transaction.categoryType === "expense" ? "지출" : "이체"}
+                                                {transaction.categoryType === "INCOME" ? "수입" : transaction.categoryType === "EXPENSE" ? "지출" : "이체"}
                                             </Badge>
                                         </div>
 

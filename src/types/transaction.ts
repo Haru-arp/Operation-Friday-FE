@@ -47,7 +47,7 @@ export interface TransactionDetailApi {
 export interface TransactionApi extends TransactionDetailApi {
     // creditItemId: number; //오른쪽
     // debitItemId: number; //왼쪽
-    categoryType: "income" | "expense" | "transfer"; //Enum으로 묶기
+    categoryType: "INCOME" | "EXPENSE" | "TRANSFER"; //Enum으로 묶기
     creditItemName: string;
     debitItemName: string;
     subtypeName: string;

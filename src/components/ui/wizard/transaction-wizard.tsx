@@ -384,9 +384,8 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
                                     return (
                                         <button
                                             key={type.id}
-                                            className={`flex flex-col items-center p-3 border rounded-lg transition-colors ${
-                                                isSelected ? " border-blue-500 bg-blue-50 dark:bg-blue-900/20" : "border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-                                            }`}
+                                            className={`flex flex-col items-center p-3 border rounded-lg transition-colors ${isSelected ? " border-blue-500 bg-blue-50 dark:bg-blue-900/20" : "border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                                }`}
                                             onClick={() => handleTypeSelect(type)}
                                         >
                                             <div className={`w-8 h-8 ${type.color} rounded-lg flex items-center justify-center mb-2`}>
@@ -482,6 +481,7 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
                     ) : (
                         <div className="space-y-3">
                             {recentTransactions.map((transaction, index) => (
+
                                 <div
                                     key={`${transaction.id}-${index}`}
                                     className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -507,15 +507,14 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
                                             <p className={`font-bold text-lg ${getTransactionColor(transaction.categoryType)}`}>{transaction.amount.toLocaleString()}원</p>
                                             <Badge
                                                 variant="outline"
-                                                className={`text-xs ${
-                                                    transaction.categoryType === "income"
+                                                className={`text-xs ${transaction.categoryType === "INCOME"
                                                         ? "border-green-200 text-green-700 dark:border-green-800 dark:text-green-400"
-                                                        : transaction.categoryType === "expense"
-                                                        ? "border-red-200 text-red-700 dark:border-red-800 dark:text-red-400"
-                                                        : "border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400"
-                                                }`}
+                                                        : transaction.categoryType === "EXPENSE"
+                                                            ? "border-red-200 text-red-700 dark:border-red-800 dark:text-red-400"
+                                                            : "border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400"
+                                                    }`}
                                             >
-                                                {transaction.categoryType === "income" ? "수입" : transaction.categoryType === "expense" ? "지출" : "이체"}
+                                                {transaction.categoryType === "INCOME" ? "수입" : transaction.categoryType === "EXPENSE" ? "지출" : "이체"}
                                             </Badge>
                                         </div>
 

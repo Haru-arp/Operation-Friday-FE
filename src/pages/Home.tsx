@@ -33,9 +33,9 @@ export default function Home() {
             return date.month() === currentMonth && date.year() === currentYear;
         });
 
-        const monthlyIncome = monthlyTransactions.filter((t) => t.categoryType === "income").reduce((sum, t) => sum + t.amount, 0);
+        const monthlyIncome = monthlyTransactions.filter((t) => t.categoryType === "INCOME").reduce((sum, t) => sum + t.amount, 0);
 
-        const monthlyExpense = monthlyTransactions.filter((t) => t.categoryType === "expense").reduce((sum, t) => sum + t.amount, 0);
+        const monthlyExpense = monthlyTransactions.filter((t) => t.categoryType === "EXPENSE").reduce((sum, t) => sum + t.amount, 0);
 
         const monthlyNet = monthlyIncome - monthlyExpense;
 
@@ -58,8 +58,8 @@ export default function Home() {
                 return date.month() === month && date.year() === year;
             });
 
-            const income = monthTransactions.filter((t) => t.categoryType === "income").reduce((sum, t) => sum + t.amount, 0);
-            const expense = monthTransactions.filter((t) => t.categoryType === "expense").reduce((sum, t) => sum + t.amount, 0);
+            const income = monthTransactions.filter((t) => t.categoryType === "INCOME").reduce((sum, t) => sum + t.amount, 0);
+            const expense = monthTransactions.filter((t) => t.categoryType === "EXPENSE").reduce((sum, t) => sum + t.amount, 0);
             monthlyTrend.push({
                 month: targetDate.format("MMM"),
                 income,
@@ -70,7 +70,7 @@ export default function Home() {
 
         // 카테고리별 지출 (원형 그래프용)
         const expenseByCategory = monthlyTransactions
-            .filter((t) => t.categoryType === "expense")
+            .filter((t) => t.categoryType === "EXPENSE")
             .reduce((acc, t) => {
                 acc[t.debitItemName] = (acc[t.debitItemName] || 0) + t.amount;
                 return acc;
@@ -360,15 +360,14 @@ export default function Home() {
                                         <p className={`font-bold text-sm ${getTransactionColor(transaction.categoryType)}`}>{transaction.amount.toLocaleString()}원</p>
                                         <Badge
                                             variant="outline"
-                                            className={`text-xs ${
-                                                transaction.categoryType === "income"
+                                            className={`text-xs ${transaction.categoryType === "INCOME"
                                                     ? "border-green-200 text-green-700 dark:border-green-800 dark:text-green-400"
-                                                    : transaction.categoryType === "expense"
-                                                    ? "border-red-200 text-red-700 dark:border-red-800 dark:text-red-400"
-                                                    : "border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400"
-                                            }`}
+                                                    : transaction.categoryType === "EXPENSE"
+                                                        ? "border-red-200 text-red-700 dark:border-red-800 dark:text-red-400"
+                                                        : "border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400"
+                                                }`}
                                         >
-                                            {transaction.categoryType === "income" ? "수입" : transaction.categoryType === "expense" ? "지출" : "이체"}
+                                            {transaction.categoryType === "INCOME" ? "수입" : transaction.categoryType === "EXPENSE" ? "지출" : "이체"}
                                         </Badge>
                                     </div>
                                 </div>
