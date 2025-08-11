@@ -1,4 +1,4 @@
-import type { TransactionRequest } from "@/components/ui/wizard/transaction-wizard";
+import type { ModifyTransactionRequest, TransactionRequest } from "@/components/ui/wizard/transaction-wizard";
 import axiosInstance from "./axios";
 
 // export const login = async (form: LoginForm) => {
@@ -22,5 +22,10 @@ export const loadAccount = async () => {
 
 export const registTransactions = async (form: TransactionRequest) => {
     const response = await axiosInstance.post(`api/v1/transactions`, form);
+    return response;
+};
+
+export const modifyTransaction = async (transactionId: number, form: ModifyTransactionRequest) => {
+    const response = await axiosInstance.put(`api/v1/transactions/${transactionId}`, form);
     return response;
 };

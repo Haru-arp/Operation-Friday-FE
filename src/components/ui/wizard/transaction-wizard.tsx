@@ -62,6 +62,16 @@ export interface TransactionRequest {
     memo: string;
 }
 
+export interface ModifyTransactionRequest {
+    subtypeCode: string;
+    transDate: string;
+    description: string;
+    debitItemId: number;
+    creditItemId: number;
+    amount: number;
+    memo: string
+}
+
 interface TransactionWizardProps {
     onSave: (transaction: TransactionRequest) => void;
     presetType?: string;
@@ -508,10 +518,10 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
                                             <Badge
                                                 variant="outline"
                                                 className={`text-xs ${transaction.categoryType === "INCOME"
-                                                        ? "border-green-200 text-green-700 dark:border-green-800 dark:text-green-400"
-                                                        : transaction.categoryType === "EXPENSE"
-                                                            ? "border-red-200 text-red-700 dark:border-red-800 dark:text-red-400"
-                                                            : "border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400"
+                                                    ? "border-green-200 text-green-700 dark:border-green-800 dark:text-green-400"
+                                                    : transaction.categoryType === "EXPENSE"
+                                                        ? "border-red-200 text-red-700 dark:border-red-800 dark:text-red-400"
+                                                        : "border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400"
                                                     }`}
                                             >
                                                 {transaction.categoryType === "INCOME" ? "수입" : transaction.categoryType === "EXPENSE" ? "지출" : "이체"}
