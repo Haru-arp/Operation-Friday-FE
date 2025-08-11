@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { loadTransactions } from "@/api/transactions";
 import { getAccountData } from "@/utils/accountData";
 import { useLoadAccounts } from "@/hook/useAccountData";
+import { useDeleteTransaction } from "@/hook/useTransactions";
 
 export type TransactionCategory = "지출" | "수익" | "자산 이동" | "초기 세팅" | "부채 이동" | "자본 회수" | "자본 이동" | "차입";
 
@@ -176,6 +177,7 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
     };
     const { data: Alltransactions, isLoading: _isLoading, isError: _isError } = useTransactions();
     const { data: accounts, isLoading: _isAccountsLoading, isError: _isAccountsError } = useLoadAccounts();
+    const { mutate: deleteTransaction, isPending: _isDeleting } = useDeleteTransaction();
     const [selectedType, setSelectedType] = useState<TransactionType | null>(null);
     const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
     const [amount, setAmount] = useState("");
@@ -187,7 +189,7 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
         accounts: [],
     });
     const [recentTransactions, setRecentTransactions] = useState<TransactionApi[]>([]);
-    const [transactions, setTransactions] = useState<TransactionApi[]>([]);
+    // const [transactions, setTransactions] = useState<TransactionApi[]>([]);
     const [item, setItem] = useState("");
     // 계정 데이터 로드
     useEffect(() => {
@@ -211,7 +213,6 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
         try {
             if (Alltransactions) {
                 // 최근 10개만 표시
-                setTransactions(Alltransactions);
                 setRecentTransactions(Alltransactions.slice(-10));
             }
         } catch (error) {
@@ -273,28 +274,20 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
         }
     };
 
-    const handleDelete = (id: number, description?: string) => {
-        const label = description?.trim() ? `"${description}"` : "이 거래";
-        if (confirm(`${label}를 삭제하시겠습니까?`)) {
-            handleDeleteTransaction(id);
-        }
-    };
-    const handleDeleteTransaction = (id: number) => {
-        try {
-            const updatedTransactions = transactions.filter((t) => t.id !== id);
-            setTransactions(updatedTransactions);
-            setRecentTransactions(updatedTransactions.slice(-10).reverse()); // ✅ 추가
-            localStorage.setItem("transactions", JSON.stringify(updatedTransactions));
-        } catch (error) {
-            console.error("거래 삭제 중 오류 발생:", error);
-            alert("거래를 삭제하는 중 오류가 발생했습니다.");
-        }
-    };
 
-    // const getAccountName = (accountId: string) => {
-    //     const account = accountData.accounts.find((acc) => acc.id === accountId);
-    //     return account ? account.name : accountId;
-    // };
+    const handleDelete = (transactionId: number) => {
+        if (confirm("정말 삭제하시겠습니까?")) {
+            deleteTransaction(transactionId, {
+                onSuccess: () => {
+                    alert("거래가 삭제되었습니다.");
+                },
+                onError: (error) => {
+                    console.error("삭제 실패:", error);
+                    alert("삭제 중 오류가 발생했습니다.");
+                }
+            });
+        }
+    };
 
     // 그룹명 조회
     const getGroupName = (groupId: string) => {
@@ -544,7 +537,7 @@ export const TransactionWizard = ({ onSave, presetType }: TransactionWizardProps
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => handleDelete(transaction.id, transaction.description ?? "")}
+                                                onClick={() => handleDelete(transaction.id)}
                                                 className="h-8 w-8 p-0 text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                                             >
                                                 <Trash2 className="h-4 w-4" />

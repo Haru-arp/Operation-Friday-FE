@@ -29,3 +29,8 @@ export const modifyTransaction = async (transactionId: number, form: ModifyTrans
     const response = await axiosInstance.put(`api/v1/transactions/${transactionId}`, form);
     return response;
 };
+
+export const deleteTransaction = async (transactionId: number) => {
+    const response = await axiosInstance.delete(`api/v1/transactions/${transactionId}`);
+    return response;
+};

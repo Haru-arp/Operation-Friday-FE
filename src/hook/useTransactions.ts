@@ -1,4 +1,4 @@
-import { loadTransactionsById, modifyTransaction, registTransactions } from "@/api/transactions";
+import { deleteTransaction, loadTransactionsById, modifyTransaction, registTransactions } from "@/api/transactions";
 import type { ModifyTransactionRequest } from "@/components/ui/wizard/transaction-wizard";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -26,6 +26,20 @@ export const useModifyTransactions = () => {
             // 관련 쿼리들 무효화
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
             queryClient.invalidateQueries({ queryKey: ["transaction", variables.transactionId] });
+        },
+    });
+};
+
+// hook/useTransactions.ts에 추가
+export const useDeleteTransaction = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (transactionId: number) => deleteTransaction(transactionId),
+        onSuccess: (_, transactionId) => {
+            // 삭제 후 관련 캐시 무효화
+            queryClient.invalidateQueries({ queryKey: ["transactions"] });
+            queryClient.removeQueries({ queryKey: ["transaction", transactionId] });
         },
     });
 };

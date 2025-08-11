@@ -11,8 +11,11 @@ import { Search, Edit2, Trash2, Plus, Calendar, ArrowUpDown, ArrowLeftRight } fr
 import { getTransactionColor, getTransactionIcon } from "@/lib/transactionHelpers";
 import { useQuery } from "@tanstack/react-query";
 import { loadTransactions } from "@/api/transactions";
+import { useDeleteTransaction } from "@/hook/useTransactions";
 export default function Entries() {
     const navigate = useNavigate();
+    const { mutate: deleteTransaction, isPending: _isDeleting } = useDeleteTransaction();
+
     const [searchTerm, setSearchTerm] = useState("");
     const [filterType, setFilterType] = useState<"ALL" | "INCOME" | "EXPENSE" | "TRANSFER">("ALL");
     const [sortBy, setSortBy] = useState<"date" | "amount" | "description">("date");
@@ -68,10 +71,17 @@ export default function Entries() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedTransactions = sortedTransactions.slice(startIndex, startIndex + itemsPerPage);
 
-    const handleDelete = (id: number, description?: string) => {
-        const label = description?.trim() ? `"${description}"` : "이 거래";
-        if (confirm(`${label}를 삭제하시겠습니까?`)) {
-            handleDeleteTransaction(id);
+    const handleDelete = (transactionId: number) => {
+        if (confirm("정말 삭제하시겠습니까?")) {
+            deleteTransaction(transactionId, {
+                onSuccess: () => {
+                    alert("거래가 삭제되었습니다.");
+                },
+                onError: (error) => {
+                    console.error("삭제 실패:", error);
+                    alert("삭제 중 오류가 발생했습니다.");
+                }
+            });
         }
     };
 
@@ -89,27 +99,6 @@ export default function Entries() {
         }
     }, [navigate, Alltransactions]);
 
-    const handleDeleteTransaction = (id: number) => {
-        try {
-            const updatedTransactions = transactions.filter((t) => t.id !== id);
-            setTransactions(updatedTransactions);
-            localStorage.setItem("transactions", JSON.stringify(updatedTransactions));
-        } catch (error) {
-            console.error("거래 삭제 중 오류 발생:", error);
-            alert("거래를 삭제하는 중 오류가 발생했습니다.");
-        }
-    };
-
-    // const handleUpdateTransaction = (updatedTransaction: TransactionApi) => {
-    //     try {
-    //         const updatedTransactions = transactions.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t));
-    //         setTransactions(updatedTransactions);
-    //         localStorage.setItem("transactions", JSON.stringify(updatedTransactions));
-    //     } catch (error) {
-    //         console.error("거래 업데이트 중 오류 발생:", error);
-    //         alert("거래를 업데이트하는 중 오류가 발생했습니다.");
-    //     }
-    // };
 
     if (isLoading) {
         return (
@@ -260,7 +249,7 @@ export default function Entries() {
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => handleDelete(transaction.id, transaction.description ?? "")}
+                                                onClick={() => handleDelete(transaction.id)}
                                                 className="h-8 w-8 p-0 text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                                             >
                                                 <Trash2 className="h-4 w-4" />
